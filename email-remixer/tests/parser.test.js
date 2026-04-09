@@ -42,7 +42,7 @@ describe('parser', () => {
       const buttons = allElements.filter(e => e.type === 'button');
       expect(buttons.length).toBe(1);
       expect(buttons[0].label).toBe('Shop Now');
-      expect(buttons[0].bgColor).toBe('#e63946');
+      expect(buttons[0].backgroundColor).toBe('#e63946');
     });
 
     it('detects horizontal layout from multi-cell rows', () => {

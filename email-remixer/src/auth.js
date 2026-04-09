@@ -60,7 +60,8 @@ export async function authenticate(credentialsPath, tokenPath) {
       console.log('\nOpening browser for authentication...\n');
       console.log(authUrl);
       console.log(`\nWaiting for auth callback on ${redirectUri}...`);
-      exec(`open "${authUrl}"`);
+      const cmd = process.platform === 'win32' ? `start "" "${authUrl}"` : process.platform === 'darwin' ? `open "${authUrl}"` : `xdg-open "${authUrl}"`;
+      exec(cmd);
     });
     setTimeout(() => { server.close(); reject(new Error('Auth timeout after 2 minutes')); }, 120000);
   });

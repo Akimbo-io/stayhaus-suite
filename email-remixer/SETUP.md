@@ -74,7 +74,7 @@ This step lets the tool read emails from your Gmail account. You only need to do
    - App name: "Email Remixer" (or anything)
    - User support email: your email
    - Developer contact: your email
-5. Click **Save and Continue** through the remaining steps (you can leave Scopes and Test users blank for now)
+5. Click **Save and Continue** (you can leave Scopes blank)
 6. On the **Test users** step, click **Add Users** and enter the Gmail address you want to read emails from
 7. Click **Save and Continue**, then **Back to Dashboard**
 
@@ -83,7 +83,7 @@ This step lets the tool read emails from your Gmail account. You only need to do
 1. In the left sidebar, go to **APIs & Services** then **Credentials**
 2. Click **Create Credentials** at the top
 3. Choose **OAuth client ID**
-4. For Application type, select **Desktop app**
+4. For Application type, select **Desktop app** (the auth flow uses `http://localhost:8080` as the redirect URI)
 5. Name it anything (e.g. "Email Remixer Desktop")
 6. Click **Create**
 7. In the popup, click **Download JSON**
@@ -257,3 +257,15 @@ Once set up, your daily workflow is:
 5. Remix the imported design
 
 The tool remembers which emails it already processed, so it only fetches new ones each time.
+
+---
+
+## Running tests
+
+The project has a test suite using Vitest. To run it:
+
+```bash
+npm test
+```
+
+All 25 tests should pass. No Gmail credentials or API keys are needed to run tests.

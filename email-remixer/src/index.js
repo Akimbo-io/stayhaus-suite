@@ -101,10 +101,13 @@ async function run() {
         const date = headers.find(h => h.name.toLowerCase() === 'date')?.value;
         const dateStr = date ? new Date(date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
 
-        const cidMap = extractInlineImages(msg.payload);
-        for (const cid in cidMap) {
-          const attachData = await getAttachment(auth, msg.id, cidMap[cid]);
-          cidMap[cid] = attachData;
+        const inlineImages = extractInlineImages(msg.payload);
+        const cidMap = {};
+        for (const img of inlineImages) {
+          if (img.contentId && img.attachmentId) {
+            const attachData = await getAttachment(auth, msg.id, img.attachmentId);
+            cidMap[img.contentId] = attachData;
+          }
         }
 
         await processImages(parsed.elements, cidMap);

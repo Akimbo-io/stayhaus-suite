@@ -47,7 +47,7 @@ describe('integration: full email parse', () => {
     const buttons = all.filter(e => e.type === 'button');
     for (const btn of buttons) {
       expect(btn.label).toBeDefined();
-      expect(btn.bgColor).toBeDefined();
+      expect(btn.backgroundColor).toBeDefined();
     }
   });
 });

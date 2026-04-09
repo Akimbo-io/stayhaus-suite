@@ -12,6 +12,7 @@ const server = http.createServer((req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET');
 
   if (req.url === '/emails') {
+    if (!fs.existsSync(OUTPUT_DIR)) { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end('[]'); return; }
     const files = fs.readdirSync(OUTPUT_DIR).filter(f => f.endsWith('.json'));
     const emails = files.map(f => {
       const data = JSON.parse(fs.readFileSync(path.join(OUTPUT_DIR, f), 'utf-8'));
