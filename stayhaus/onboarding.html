@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="bg">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>StayHaus Онбординг на клиент</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap&subset=cyrillic" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bg:       '#0A0118',
+          bg2:      '#0F0520',
+          card:     '#18023A',
+          card2:    '#241A30',
+          line:     '#2B2338',
+          text:     '#FFFFFF',
+          muted:    '#9B96B0',
+          purple:   '#B47CFD',
+          pink:     '#FF7FC2',
+          peach:    '#FFB07B',
+        },
+        fontFamily: {
+          sans:    ['Inter', 'system-ui', 'sans-serif'],
+          display: ['Outfit', 'Inter', 'sans-serif'],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  html, body {
+    background: #0A0118;
+    color: #fff;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(60% 50% at 80% 0%, rgba(180,124,253,.18), transparent 60%),
+      radial-gradient(50% 40% at 0% 100%, rgba(255,127,194,.12), transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .step { display: none; }
+  .step.active { display: block; }
+
+  input, textarea, select {
+    width: 100%;
+    background: #0F0520;
+    border: 1px solid #2B2338;
+    border-radius: 14px;
+    padding: 20px 36px;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #fff;
+    font-family: inherit;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+  input { height: 60px; padding-top: 0; padding-bottom: 0; }
+  textarea { padding-top: 22px; padding-bottom: 22px; }
+  input::placeholder, textarea::placeholder { color: #6b6580; }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #B47CFD;
+    background: #140330;
+    box-shadow: 0 0 0 4px rgba(180,124,253,.12);
+  }
+  textarea { min-height: 170px; resize: vertical; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #B47CFD 0%, #FF7FC2 100%);
+    color: #0A0118;
+    padding: 14px 26px;
+    border-radius: 999px;
+    border: 0;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: .01em;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s, filter .15s;
+    box-shadow: 0 8px 24px -8px rgba(180,124,253,.5);
+  }
+  .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.08); }
+  .btn-ghost {
+    background: transparent;
+    color: #9B96B0;
+    padding: 14px 22px;
+    border: 0;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 999px;
+    transition: color .15s, background .15s;
+  }
+  .btn-ghost:hover { color: #fff; background: rgba(255,255,255,.04); }
+  .btn-ghost:disabled { opacity: .25; cursor: not-allowed; }
+
+  .req { color: #FF7FC2; }
+</style>
+</head>
+<body>
+
+<div class="relative z-10 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="border-b border-line/60 backdrop-blur-sm">
+    <div class="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="text-xl font-display font-bold tracking-tight text-white">StayHaus</div>
+      </div>
+      <div class="text-[11px] uppercase tracking-[0.22em] text-muted hidden sm:block">Retention Marketing</div>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    <div class="max-w-2xl mx-auto px-6 py-16">
+
+      <!-- Intro -->
+      <div class="mb-12">
+        <div class="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-purple mb-5">
+          <span class="h-px w-6 bg-purple"></span>
+          Стъпка <span id="stepNum">1</span> / 7
+        </div>
+        <h1 class="font-display text-4xl sm:text-5xl font-bold leading-[1.05] tracking-tight">
+          Онбординг на <span class="bg-gradient-to-r from-purple via-pink to-peach bg-clip-text text-transparent">клиент</span>.
+        </h1>
+        <p class="mt-5 text-muted max-w-lg leading-relaxed">
+          Попълнете данните за вашия бранд, за да стартираме работата заедно.
+        </p>
+      </div>
+
+      <!-- Progress -->
+      <div class="mb-10">
+        <div class="h-[3px] w-full bg-line rounded-full overflow-hidden">
+          <div id="bar" class="h-full bg-gradient-to-r from-purple to-pink transition-all duration-500" style="width:14%"></div>
+        </div>
+      </div>
+
+      <!-- Form card -->
+      <form id="form" class="bg-card/40 border border-line rounded-3xl p-8 sm:p-10 backdrop-blur-md">
+
+        <section class="step active" data-step="1">
+          <h2 class="font-display text-2xl font-bold mb-1">Бранд основи</h2>
+          <p class="text-sm text-muted mb-8">Кой сте и какво продавате.</p>
+          <div class="space-y-5">
+            <div><label class="block text-sm font-medium mb-2">Име на бранда <span class="req">*</span></label>
+              <input name="brand_name" required></div>
+            <div><label class="block text-sm font-medium mb-2">Уебсайт <span class="req">*</span></label>
+              <input name="website" type="text" placeholder="https://" required></div>
+            <div><label class="block text-sm font-medium mb-2">Продуктови категории</label>
+              <input name="product_categories" placeholder="напр. Натурална козметика, Парфюми"></div>
+            <div><label class="block text-sm font-medium mb-2">Необходими езици</label>
+              <input name="languages" placeholder="напр. BG, RO, GR"></div>
+          </div>
+        </section>
+
+        <section class="step" data-step="2">
+          <h2 class="font-display text-2xl font-bold mb-1">Бранд история</h2>
+          <p class="text-sm text-muted mb-8">Опишете бранда с няколко изречения.</p>
+          <div><label class="block text-sm font-medium mb-2">Описание на бранда <span class="req">*</span></label>
+            <textarea name="brand_description" required></textarea></div>
+        </section>
+
+        <section class="step" data-step="3">
+          <h2 class="font-display text-2xl font-bold mb-1">Клиенти</h2>
+          <p class="text-sm text-muted mb-8">Кои са те и какво искат.</p>
+          <div class="space-y-5">
+            <div><label class="block text-sm font-medium mb-2">Познания за клиентите <span class="req">*</span></label>
+              <textarea name="customer_insights" placeholder="Кои са те, какво ги мотивира?" required></textarea></div>
+            <div><label class="block text-sm font-medium mb-2">Какво искат клиентите да постигнат с вашия продукт? <span class="req">*</span></label>
+              <textarea name="desired_outcome" required></textarea></div>
+          </div>
+        </section>
+
+        <section class="step" data-step="4">
+          <h2 class="font-display text-2xl font-bold mb-1">Защо вас</h2>
+          <p class="text-sm text-muted mb-8">Какво ви прави избора на клиентите.</p>
+          <div class="space-y-5">
+            <div><label class="block text-sm font-medium mb-2">Какво най-често казват клиентите, че ги е накарало да ви изберат? <span class="req">*</span></label>
+              <textarea name="why_us" required></textarea></div>
+            <div><label class="block text-sm font-medium mb-2">Какво отличава вашия продукт от пазара? <span class="req">*</span></label>
+              <textarea name="differentiation" required></textarea></div>
+          </div>
+        </section>
+
+        <section class="step" data-step="5">
+          <h2 class="font-display text-2xl font-bold mb-1">УТП и предимства</h2>
+          <p class="text-sm text-muted mb-8">Уникално търговско предложение.</p>
+          <div class="space-y-5">
+            <div><label class="block text-sm font-medium mb-2">УТП (уникални предимства) <span class="req">*</span></label>
+              <textarea name="usp" required></textarea></div>
+            <div><label class="block text-sm font-medium mb-2">Трудно копируеми предимства</label>
+              <textarea name="hard_to_copy"></textarea></div>
+            <div><label class="block text-sm font-medium mb-2">Едно изречение, защо да изберат вас <span class="req">*</span></label>
+              <input name="one_sentence" required></div>
+          </div>
+        </section>
+
+        <section class="step" data-step="6">
+          <h2 class="font-display text-2xl font-bold mb-1">Достъп и асети</h2>
+          <p class="text-sm text-muted mb-8">За да започнем работа технически.</p>
+          <div class="space-y-5">
+            <div><label class="block text-sm font-medium mb-2">Google Drive папка (линк)</label>
+              <input name="drive_link" type="text" placeholder="https://drive.google.com/..."></div>
+            <div><label class="block text-sm font-medium mb-2">Брандбук / насоки за бранда</label>
+              <textarea name="brand_guidelines" placeholder="Линк или кратко описание (цветове, шрифтове, тон)"></textarea></div>
+          </div>
+        </section>
+
+        <section class="step" data-step="7">
+          <h2 class="font-display text-2xl font-bold mb-1">Одобряващ</h2>
+          <p class="text-sm text-muted mb-8">Кой одобрява имейл чернови?</p>
+          <div class="space-y-5">
+            <div><label class="block text-sm font-medium mb-2">Име на одобряващия <span class="req">*</span></label>
+              <input name="approver_name" required></div>
+            <div><label class="block text-sm font-medium mb-2">Имейл на одобряващия <span class="req">*</span></label>
+              <input name="approver_email" type="email" required></div>
+          </div>
+        </section>
+
+        <div class="mt-10 pt-6 border-t border-line flex items-center justify-between">
+          <button type="button" id="back" class="btn-ghost" disabled>← Назад</button>
+          <button type="button" id="next" class="btn-primary">Напред →</button>
+        </div>
+      </form>
+
+      <p class="text-xs text-muted mt-8 text-center">Данните се използват само за създаване на вашия клиентски портал.</p>
+    </div>
+  </main>
+
+  <footer class="border-t border-line/60 mt-16">
+    <div class="max-w-5xl mx-auto px-6 py-6 text-xs text-muted flex justify-between">
+      <span>© StayHaus</span>
+      <span>stayhaus.eu</span>
+    </div>
+  </footer>
+</div>
+
+<script>
+  const TOTAL = 7;
+  const STORAGE_KEY = 'stayhaus_onboarding_v1';
+  let cur = 1;
+
+  // Restore saved state
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    if (saved.fields) {
+      for (const [k, v] of Object.entries(saved.fields)) {
+        const el = document.querySelector(`[name="${k}"]`);
+        if (el) el.value = v;
+      }
+    }
+    if (saved.step) cur = Math.min(Math.max(+saved.step, 1), TOTAL);
+  } catch {}
+
+  function save() {
+    const fields = Object.fromEntries(new FormData(document.getElementById('form')));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ fields, step: cur }));
+  }
+  document.addEventListener('input', save);
+  const steps = document.querySelectorAll('.step');
+  const bar = document.getElementById('bar');
+  const stepNum = document.getElementById('stepNum');
+  const back = document.getElementById('back');
+  const next = document.getElementById('next');
+
+  function show(n) {
+    steps.forEach(s => s.classList.toggle('active', +s.dataset.step === n));
+    bar.style.width = (n / TOTAL * 100) + '%';
+    stepNum.textContent = n;
+    back.disabled = n === 1;
+    next.textContent = n === TOTAL ? 'Изпрати →' : 'Напред →';
+    save();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function validateStep(n) {
+    const fields = document.querySelectorAll(`.step[data-step="${n}"] [required]`);
+    for (const f of fields) {
+      if (!f.checkValidity()) { f.reportValidity(); return false; }
+    }
+    return true;
+  }
+
+  next.addEventListener('click', async () => {
+    if (!validateStep(cur)) return;
+    if (cur < TOTAL) { cur++; show(cur); return; }
+    const data = Object.fromEntries(new FormData(document.getElementById('form')));
+    next.disabled = true;
+    next.textContent = 'Изпращане...';
+    try {
+      const r = await fetch('create-portal.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || 'Грешка');
+      localStorage.removeItem(STORAGE_KEY);
+      document.getElementById('form').innerHTML =
+        '<div class="text-center py-12"><h2 class="font-display text-3xl font-bold mb-3">Готово.</h2>' +
+        '<p class="text-muted mb-6">Вашият клиентски портал е създаден.</p>' +
+        '<a href="' + j.url + '" target="_blank" class="btn-primary inline-block">Отвори портала →</a></div>';
+    } catch (e) {
+      next.disabled = false;
+      next.textContent = 'Опитай пак →';
+      alert('Грешка: ' + e.message);
+    }
+  });
+
+  back.addEventListener('click', () => { if (cur > 1) { cur--; show(cur); } });
+
+  // Initialize on the restored step
+  show(cur);
+</script>
+</body>
+</html>

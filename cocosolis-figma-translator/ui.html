@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --bg: #f7f7f8;
+    --surface: #ffffff;
+    --surface-hover: #fafafa;
+    --border: #e8e8ec;
+    --border-light: #f0f0f3;
+    --text: #1a1a1e;
+    --text-secondary: #8b8b96;
+    --text-tertiary: #ababb3;
+    --accent: #1a1a1e;
+    --accent-soft: #f0f0f3;
+    --green: #1a8c5a;
+    --green-bg: #ecfdf3;
+    --green-border: #b5e3cc;
+    --red: #c4320a;
+    --red-bg: #fef3f0;
+    --blue: #2563eb;
+    --blue-bg: #eff4ff;
+    --amber: #a16207;
+    --amber-bg: #fefce8;
+    --amber-border: #fde68a;
+    --radius: 10px;
+    --radius-sm: 7px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
+    --shadow-raised: 0 2px 4px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.06), 0 1px 0 rgba(0,0,0,0.04);
+    --shadow-3d: 0 1px 0 rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.05), 0 4px 8px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 12px;
+    color: var(--text);
+    padding: 20px;
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Header */
+  .header { margin-bottom: 20px; }
+  .header h2 {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--text);
+    margin-bottom: 3px;
+  }
+  .header p {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-3d);
+    position: relative;
+  }
+  .card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 4px; right: 4px;
+    height: 3px;
+    background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.03));
+    border-radius: 0 0 var(--radius) var(--radius);
+    pointer-events: none;
+  }
+
+  /* Labels */
+  label {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+
+  /* Selects */
+  select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-family: inherit;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23ababb3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  select:hover { border-color: #d0d0d6; }
+  select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,26,30,0.08); }
+
+  /* Mode toggle */
+  .mode-toggle {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    background: var(--accent-soft);
+    border-radius: var(--radius-sm);
+    margin-bottom: 14px;
+  }
+  .mode-btn {
+    flex: 1;
+    padding: 7px 0;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+  }
+  .mode-btn.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-raised);
+  }
+  .mode-btn:hover:not(.active) { color: var(--text); }
+
+  /* Action buttons row */
+  .actions { display: flex; gap: 6px; margin-bottom: 14px; }
+  .btn-ghost {
+    font-size: 11px;
+    font-weight: 500;
+    font-family: inherit;
+    padding: 6px 12px;
+    background: var(--surface);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s;
+  }
+  .btn-ghost:hover { border-color: #d0d0d6; color: var(--text); background: var(--surface-hover); }
+
+  /* Drop zone */
+  .drop-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 28px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    background: var(--surface);
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--text);
+  }
+  .drop-zone.loaded {
+    border-color: var(--green-border);
+    border-style: solid;
+    background: var(--green-bg);
+    color: var(--green);
+    font-weight: 500;
+  }
+
+  /* Primary button */
+  .btn-primary {
+    display: block;
+    width: 100%;
+    padding: 11px 20px;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--accent);
+    color: #fff;
+    box-shadow: var(--shadow-raised), inset 0 1px 0 rgba(255,255,255,0.06);
+    margin-top: 14px;
+    position: relative;
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 3px; right: 3px;
+    height: 3px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 0 0 5px 5px;
+    pointer-events: none;
+  }
+  .btn-primary:hover { background: #2d2d33; transform: translateY(-0.5px); }
+  .btn-primary:active { transform: translateY(0.5px); box-shadow: var(--shadow-sm); }
+  .btn-primary:disabled {
+    background: #d4d4d8;
+    color: #a1a1aa;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  .btn-primary:disabled::after { display: none; }
+
+  /* Status */
+  .status {
+    margin-top: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 500;
+    display: none;
+  }
+  .status.info { display: block; background: var(--blue-bg); color: var(--blue); }
+  .status.success { display: block; background: var(--green-bg); color: var(--green); }
+  .status.error { display: block; background: var(--red-bg); color: var(--red); }
+
+  /* Preview table */
+  .preview {
+    margin-top: 10px;
+    max-height: 130px;
+    overflow-y: auto;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    font-size: 10px;
+    background: var(--surface);
+  }
+  .preview table { width: 100%; border-collapse: collapse; }
+  .preview th {
+    background: var(--bg);
+    padding: 5px 8px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    position: sticky;
+    top: 0;
+    border-bottom: 1px solid var(--border-light);
+  }
+  .preview td {
+    padding: 4px 8px;
+    border-top: 1px solid var(--border-light);
+    color: var(--text);
+  }
+
+  /* Scan results */
+  .scan-list {
+    margin-top: 8px;
+    max-height: 90px;
+    overflow-y: auto;
+    font-size: 11px;
+    background: var(--surface);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+  }
+  .scan-item { padding: 3px 0; border-bottom: 1px solid var(--border-light); }
+  .scan-item:last-child { border-bottom: none; }
+  .scan-item .name { font-weight: 600; color: var(--text); }
+  .scan-item .content { color: var(--text-secondary); margin-left: 4px; }
+
+  /* Hints */
+  .hint { color: var(--text-tertiary); font-size: 10px; margin-top: 5px; }
+
+  /* Sheet select */
+  .sheet-select { margin-top: 10px; display: none; }
+
+  /* Language tags */
+  .lang-grid { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .lang-tag {
+    font-size: 9px;
+    background: var(--accent-soft);
+    color: var(--text-secondary);
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  /* Email meta cards */
+  .email-meta { margin-top: 10px; display: none; }
+  .email-meta-card {
+    background: var(--amber-bg);
+    border: 1px solid var(--amber-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    box-shadow: var(--shadow-sm);
+  }
+  .email-meta-card h4 {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+  .email-meta-lang { font-size: 11px; margin-bottom: 3px; line-height: 1.4; }
+  .email-meta-lang .lang-code {
+    font-weight: 700;
+    color: var(--amber);
+    display: inline-block;
+    width: 22px;
+    font-size: 10px;
+  }
+  .email-meta-lang .text { color: #451a03; }
+  .email-meta-expand {
+    font-size: 10px;
+    color: var(--amber);
+    cursor: pointer;
+    font-weight: 500;
+    margin-top: 4px;
+    display: inline-block;
+    opacity: 0.8;
+  }
+  .email-meta-expand:hover { opacity: 1; }
+
+  /* Section spacing */
+  .section { margin-bottom: 12px; }
+  .section:last-child { margin-bottom: 0; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h2>Design Translator</h2>
+  <p>Upload CSV or Excel. Matches text by content, duplicates frame per language.</p>
+</div>
+
+<!-- Mode Toggle -->
+<div class="mode-toggle">
+  <button class="mode-btn active" id="modeEmail" onclick="setMode('email')">Email</button>
+  <button class="mode-btn" id="modeCreative" onclick="setMode('creative')">Creative</button>
+</div>
+
+<div class="actions">
+  <button class="btn-ghost" onclick="scanLayers()">Scan Frame</button>
+  <button class="btn-ghost" onclick="createSample()">Create Sample</button>
+</div>
+
+<div id="scanResults" class="scan-list" style="display:none;"></div>
+
+<div class="card">
+  <label>Upload File</label>
+  <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+    Drop CSV or Excel here
+  </div>
+  <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.xlsx,.xls" style="display:none" />
+  <p class="hint">.csv or .xlsx with language codes as headers</p>
+
+  <div class="sheet-select" id="sheetSelectArea">
+    <label style="margin-top:10px;">Sheet</label>
+    <select id="sheetSelect" onchange="loadSheet()"></select>
+  </div>
+</div>
+
+<!-- Email meta: Subject Line & Preview Text -->
+<div class="email-meta" id="emailMeta"></div>
+
+<div id="previewArea"></div>
+
+<div class="card">
+  <div class="section">
+    <label>Source Language</label>
+    <select id="sourceLang">
+      <option value="">Upload file first</option>
+    </select>
+  </div>
+
+  <div class="section">
+    <label>Text Resize</label>
+    <select id="autoResize">
+      <option value="height">Auto height</option>
+      <option value="both">Auto width & height</option>
+      <option value="none">Keep original</option>
+      <option value="truncate">Truncate overflow</option>
+    </select>
+  </div>
+</div>
+
+<button class="btn-primary" id="translateBtn" disabled onclick="startTranslation()">
+  Upload file to start
+</button>
+
+<div class="status" id="statusBar"></div>
+
+<script>
+const LANG_NAMES = {
+  en: 'English', bg: 'Bulgarian', el: 'Greek', ro: 'Romanian',
+  hu: 'Hungarian', hr: 'Croatian', cs: 'Czech', sk: 'Slovak',
+  pt: 'Portuguese', es: 'Spanish', it: 'Italian', fr: 'French',
+  de: 'German', pl: 'Polish', ru: 'Russian', nl: 'Dutch',
+  da: 'Danish', sr: 'Serbian', uk: 'Ukrainian', tr: 'Turkish',
+  sv: 'Swedish', fi: 'Finnish', no: 'Norwegian'
+};
+
+let csvData = null;
+let workbook = null;
+let currentMode = 'email';
+let emailMetaRows = [];
+let bodyRows = [];
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeEmail').classList.toggle('active', mode === 'email');
+  document.getElementById('modeCreative').classList.toggle('active', mode === 'creative');
+  if (csvData) processData();
+}
+
+function detectDelimiter(firstLine) {
+  const tab = firstLine.split('\t').length;
+  const semi = firstLine.split(';').length;
+  const comma = firstLine.split(',').length;
+  if (tab >= comma && tab >= semi) return '\t';
+  if (semi > comma) return ';';
+  return ',';
+}
+
+function parseCSV(text) {
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+  if (lines.length < 2) return null;
+  const delim = detectDelimiter(lines[0]);
+
+  function splitLine(line) {
+    const cells = [];
+    let current = '';
+    let inQ = false;
+    for (let ci = 0; ci < line.length; ci++) {
+      const ch = line[ci];
+      if (inQ) {
+        if (ch === '"') {
+          if (ci + 1 < line.length && line[ci + 1] === '"') { current += '"'; ci++; }
+          else inQ = false;
+        } else current += ch;
+      } else if (ch === '"') inQ = true;
+      else if (ch === delim) { cells.push(current.trim()); current = ''; }
+      else current += ch;
+    }
+    cells.push(current.trim());
+    return cells;
+  }
+
+  const headers = splitLine(lines[0]);
+  const allLangs = headers.filter(h => h.length > 0);
+  const rows = [];
+
+  for (let i = 1; i < lines.length; i++) {
+    const cells = splitLine(lines[i]);
+    if (cells.length < 2) continue;
+    if (cells.every(c => !c)) continue;
+    const sourceText = cells[0];
+    const translations = {};
+    for (let j = 0; j < allLangs.length; j++) {
+      if (cells[j]) translations[allLangs[j]] = cells[j];
+    }
+    rows.push({ sourceText, translations });
+  }
+
+  return { allLangs, rows };
+}
+
+function parseExcelSheet(wb, sheetName) {
+  const ws = wb.Sheets[sheetName];
+  if (!ws) return null;
+  const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+  if (data.length < 2) return null;
+
+  let headerIdx = -1;
+  let startCol = 0;
+
+  for (let r = 0; r < Math.min(data.length, 5); r++) {
+    const row = data[r].map(c => String(c).trim());
+    const langMatches = row.filter(c => isLangCode(c)).length;
+    if (langMatches >= 3) {
+      headerIdx = r;
+      if (!isLangCode(row[0]) && isLangCode(row[1])) startCol = 1;
+      break;
+    }
+  }
+
+  if (headerIdx === -1) return null;
+
+  const headerRow = data[headerIdx].map(c => String(c).trim());
+  const allLangs = [];
+  const colMap = [];
+
+  for (let j = startCol; j < headerRow.length; j++) {
+    const code = mapLangCode(headerRow[j]);
+    if (code && !allLangs.includes(code)) {
+      allLangs.push(code);
+      colMap.push({ col: j, lang: code });
+    }
+  }
+
+  const hasLabelCol = startCol === 1;
+
+  const rows = [];
+  for (let r = headerIdx + 1; r < data.length; r++) {
+    const srcRow = data[r];
+    if (!srcRow || srcRow.length === 0) continue;
+
+    const label = hasLabelCol ? String(srcRow[0] || '').trim() : '';
+    const translations = {};
+    let hasContent = false;
+
+    for (const cm of colMap) {
+      const val = srcRow[cm.col] != null ? String(srcRow[cm.col]).trim() : '';
+      if (val && val !== 'None') {
+        translations[cm.lang] = val;
+        hasContent = true;
+      }
+    }
+
+    if (!hasContent) continue;
+    const sourceText = translations[allLangs[0]] || '';
+    rows.push({ sourceText, translations, label });
+  }
+
+  return { allLangs, rows };
+}
+
+function isLangCode(val) {
+  if (!val) return false;
+  const v = val.toUpperCase().trim();
+  const known = [
+    'ENG', 'EN', 'BG', 'GR', 'RO', 'HU', 'HR', 'CZ', 'SK', 'PT', 'ES',
+    'IT', 'FR', 'DE', 'PL', 'RU', 'NL', 'DK', 'RS', 'CY', 'AT', 'UK', 'US', 'AU',
+    'ENG - UK', 'GR + CY', 'FR + LU + BE', 'FR + BE + LUX', 'DE + AT',
+    'LUX + BE', 'EL', 'CS', 'DA', 'SR', 'SV', 'FI', 'NO', 'TR'
+  ];
+  return known.some(k => v === k || v.startsWith(k + ' '));
+}
+
+function mapLangCode(val) {
+  if (!val) return null;
+  const v = val.toUpperCase().trim();
+  const map = {
+    'ENG': 'en', 'EN': 'en', 'ENG - UK': 'en',
+    'BG': 'bg',
+    'GR': 'el', 'GR + CY': 'el', 'CY': 'el',
+    'RO': 'ro', 'HU': 'hu', 'HR': 'hr',
+    'CZ': 'cs', 'CS': 'cs', 'SK': 'sk',
+    'PT': 'pt', 'ES': 'es', 'IT': 'it',
+    'FR': 'fr', 'FR + LU + BE': 'fr', 'FR + BE + LUX': 'fr',
+    'DE': 'de', 'DE + AT': 'de',
+    'PL': 'pl', 'RU': 'ru', 'NL': 'nl',
+    'DK': 'da', 'DA': 'da',
+    'RS': 'sr', 'SR': 'sr',
+    'UK': 'en', 'US': 'en', 'AU': 'en', 'AT': 'de',
+    'LUX + BE': 'fr', 'EL': 'el',
+    'SV': 'sv', 'FI': 'fi', 'NO': 'no', 'TR': 'tr'
+  };
+  if (map[v]) return map[v];
+  for (const key in map) { if (v.startsWith(key)) return map[key]; }
+  if (/^[A-Z]{2}$/.test(v)) return v.toLowerCase();
+  return null;
+}
+
+function processData() {
+  if (!csvData) return;
+  emailMetaRows = [];
+  bodyRows = [];
+
+  if (currentMode === 'email') {
+    // Only separate rows as meta if they have explicit labels (Subject, Preview)
+    // Never use position-based guessing — it causes false positives
+    const emailLabelPatterns = ['subject', 'preview'];
+
+    for (let i = 0; i < csvData.rows.length; i++) {
+      const row = csvData.rows[i];
+      const label = (row.label || '').toLowerCase();
+      const isMetaByLabel = emailLabelPatterns.some(p => label.includes(p));
+
+      if (isMetaByLabel && emailMetaRows.length < 2) {
+        emailMetaRows.push(row);
+      } else {
+        bodyRows.push(row);
+      }
+    }
+  } else {
+    bodyRows = [...csvData.rows];
+  }
+
+  showEmailMeta();
+  showPreview();
+  updateSourceLang();
+  document.getElementById('translateBtn').disabled = false;
+  document.getElementById('translateBtn').textContent = 'Generate Translations';
+}
+
+function showEmailMeta() {
+  const metaDiv = document.getElementById('emailMeta');
+  if (currentMode !== 'email' || emailMetaRows.length === 0) {
+    metaDiv.style.display = 'none';
+    return;
+  }
+
+  metaDiv.style.display = 'block';
+  let html = '';
+
+  const metaLabels = ['Subject Line', 'Preview Text'];
+  emailMetaRows.forEach((row, idx) => {
+    const title = row.label || metaLabels[idx] || `Meta ${idx + 1}`;
+    html += `<div class="email-meta-card">`;
+    html += `<h4>${title}</h4>`;
+
+    const langs = csvData.allLangs;
+    const showCount = 4;
+    langs.forEach((lang, li) => {
+      const text = row.translations[lang] || '';
+      if (!text) return;
+      const hidden = li >= showCount ? ' style="display:none"' : '';
+      html += `<div class="email-meta-lang meta-${idx}-lang"${hidden}>`;
+      html += `<span class="lang-code">${lang.toUpperCase()}</span>`;
+      html += `<span class="text">${text.substring(0, 80)}${text.length > 80 ? '...' : ''}</span>`;
+      html += `</div>`;
+    });
+
+    if (langs.length > showCount) {
+      html += `<span class="email-meta-expand" onclick="toggleMetaLangs(${idx})">Show all ${langs.length} languages</span>`;
+    }
+    html += `</div>`;
+  });
+
+  metaDiv.innerHTML = html;
+}
+
+function toggleMetaLangs(idx) {
+  const items = document.querySelectorAll(`.meta-${idx}-lang`);
+  let anyHidden = false;
+  items.forEach(el => { if (el.style.display === 'none') anyHidden = true; });
+  items.forEach(el => el.style.display = anyHidden ? '' : 'none');
+  if (!anyHidden) {
+    let count = 0;
+    items.forEach(el => { if (count < 4) el.style.display = ''; count++; });
+  }
+}
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files.length) handleFile(fileInput.files[0]); });
+
+function handleFile(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+
+  if (ext === 'xlsx' || ext === 'xls') {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        workbook = XLSX.read(e.target.result, { type: 'array' });
+        const sheetArea = document.getElementById('sheetSelectArea');
+        const sheetSel = document.getElementById('sheetSelect');
+        sheetSel.innerHTML = '';
+        const validSheets = workbook.SheetNames.filter(n => n.toUpperCase() !== 'SCHEDULE');
+        validSheets.forEach(name => {
+          sheetSel.innerHTML += `<option value="${name}">${name}</option>`;
+        });
+        sheetArea.style.display = 'block';
+        dropZone.classList.add('loaded');
+        dropZone.textContent = `${file.name} — ${validSheets.length} sheets`;
+        loadSheet();
+      } catch (err) {
+        setStatus('error', 'Could not read Excel file: ' + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      csvData = parseCSV(e.target.result);
+      if (!csvData || csvData.rows.length === 0) {
+        setStatus('error', 'Could not parse CSV. Check the format.');
+        return;
+      }
+      document.getElementById('sheetSelectArea').style.display = 'none';
+      workbook = null;
+      dropZone.classList.add('loaded');
+      dropZone.textContent = `${file.name} — ${csvData.allLangs.length} langs, ${csvData.rows.length} rows`;
+      processData();
+    };
+    reader.readAsText(file);
+  }
+}
+
+function loadSheet() {
+  const sheetName = document.getElementById('sheetSelect').value;
+  if (!workbook || !sheetName) return;
+
+  csvData = parseExcelSheet(workbook, sheetName);
+  if (!csvData || csvData.rows.length === 0) {
+    setStatus('error', `Sheet "${sheetName}" has no translatable data.`);
+    document.getElementById('translateBtn').disabled = true;
+    return;
+  }
+
+  setStatus('info', `"${sheetName}" — ${csvData.allLangs.length} languages, ${csvData.rows.length} rows`);
+  processData();
+}
+
+function showPreview() {
+  if (!csvData) return;
+  const area = document.getElementById('previewArea');
+  const displayRows = (currentMode === 'email') ? bodyRows : csvData.rows;
+  let html = '<div class="lang-grid">';
+  csvData.allLangs.forEach(l => {
+    const name = LANG_NAMES[l] || l;
+    html += `<span class="lang-tag">${l.toUpperCase()}</span>`;
+  });
+  html += '</div>';
+
+  if (currentMode === 'email' && emailMetaRows.length > 0) {
+    html += `<p class="hint" style="margin-top:5px;">${emailMetaRows.length} meta row(s) separated, ${displayRows.length} text rows for frame</p>`;
+  }
+
+  html += '<div class="preview"><table><tr>';
+  csvData.allLangs.forEach(l => html += `<th>${l.toUpperCase()}</th>`);
+  html += '</tr>';
+  const max = Math.min(displayRows.length, 5);
+  for (let i = 0; i < max; i++) {
+    const row = displayRows[i];
+    html += '<tr>';
+    csvData.allLangs.forEach(l => {
+      const t = row.translations[l] || '';
+      html += `<td>${t.substring(0, 30)}${t.length > 30 ? '...' : ''}</td>`;
+    });
+    html += '</tr>';
+  }
+  if (displayRows.length > max) {
+    html += `<tr><td colspan="${csvData.allLangs.length}" style="text-align:center;color:var(--text-tertiary);">+${displayRows.length - max} more</td></tr>`;
+  }
+  html += '</table></div>';
+  area.innerHTML = html;
+}
+
+function updateSourceLang() {
+  const sel = document.getElementById('sourceLang');
+  sel.innerHTML = '';
+  csvData.allLangs.forEach(l => {
+    const name = LANG_NAMES[l] || l;
+    sel.innerHTML += `<option value="${l}">${l.toUpperCase()} — ${name}</option>`;
+  });
+  if (csvData.allLangs.includes('en')) sel.value = 'en';
+  else if (csvData.allLangs.includes('bg')) sel.value = 'bg';
+}
+
+function startTranslation() {
+  if (!csvData) return;
+  const btn = document.getElementById('translateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Translating...';
+  setStatus('info', 'Starting...');
+
+  const sourceLang = document.getElementById('sourceLang').value;
+  const targetLangs = csvData.allLangs.filter(l => l !== sourceLang);
+
+  const rowsToSend = (currentMode === 'email') ? bodyRows : csvData.rows;
+
+  const rows = rowsToSend.map(r => ({
+    sourceText: r.translations[sourceLang] || r.sourceText,
+    translations: r.translations,
+  }));
+
+  parent.postMessage({
+    pluginMessage: {
+      type: 'translate',
+      data: { sourceLang, targetLangs, rows },
+      autoResize: document.getElementById('autoResize').value,
+      emailMeta: (currentMode === 'email') ? emailMetaRows.map(r => ({
+        label: r.label || '',
+        translations: r.translations,
+      })) : null,
+    }
+  }, '*');
+}
+
+function scanLayers() {
+  parent.postMessage({ pluginMessage: { type: 'scan' } }, '*');
+}
+
+function createSample() {
+  parent.postMessage({ pluginMessage: { type: 'create-sample' } }, '*');
+}
+
+function setStatus(type, message) {
+  const bar = document.getElementById('statusBar');
+  bar.className = 'status ' + type;
+  bar.textContent = message;
+}
+
+onmessage = (event) => {
+  const msg = event.data.pluginMessage;
+  if (!msg) return;
+  if (msg.type === 'status') setStatus('info', msg.message);
+  if (msg.type === 'error') {
+    setStatus('error', msg.message);
+    const btn = document.getElementById('translateBtn');
+    btn.disabled = false;
+    btn.textContent = 'Generate Translations';
+  }
+  if (msg.type === 'done') {
+    setStatus('success', msg.message);
+    const btn = document.getElementById('translateBtn');
+    btn.disabled = false;
+    btn.textContent = 'Done! Run again?';
+  }
+  if (msg.type === 'scan-result') {
+    const div = document.getElementById('scanResults');
+    div.style.display = 'block';
+    if (!msg.layers || msg.layers.length === 0) {
+      div.innerHTML = '<i>No text layers found. Select a frame first.</i>';
+      return;
+    }
+    div.innerHTML = msg.layers.map(l =>
+      `<div class="scan-item"><span class="name">${l.name}</span> <span class="content">"${l.content}"</span></div>`
+    ).join('');
+  }
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic-settings
+google-genai
+Pillow>=10.0.0
+opencv-python-headless
+numpy
+python-dotenv

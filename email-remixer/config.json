@@ -1,0 +1,5 @@
+{
+  "senders": ["support@hears.com"],
+  "outputDir": "./output",
+  "processedLedger": "./processed.json"
+}

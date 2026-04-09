@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      background: #ffffff;
+      color: #111;
+      font-size: 12px;
+    }
+
+    .header {
+      padding: 12px 14px 8px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header h2 { font-size: 13px; font-weight: 600; }
+
+    .btn-refresh {
+      background: none;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      color: #555;
+      font-family: inherit;
+    }
+    .btn-refresh:hover { background: #f5f5f5; }
+
+    .email-list {
+      overflow-y: auto;
+      max-height: 320px;
+    }
+
+    .email-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      border-bottom: 1px solid #f0f0f0;
+      gap: 8px;
+    }
+
+    .email-item:hover { background: #fafafa; }
+
+    .email-info { flex: 1; min-width: 0; }
+    .email-subject {
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .email-meta { font-size: 10px; color: #999; margin-top: 2px; }
+
+    .btn-import {
+      background: #18a0fb;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+      flex-shrink: 0;
+    }
+    .btn-import:hover { background: #0d8de8; }
+    .btn-import:disabled { background: #ccc; cursor: not-allowed; }
+    .btn-import.done { background: #2d6a4f; }
+
+    .footer {
+      padding: 8px 14px;
+      border-top: 1px solid #eee;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-import-all {
+      flex: 1;
+      background: #111;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-import-all:hover { background: #333; }
+    .btn-import-all:disabled { background: #ccc; cursor: not-allowed; }
+
+    .status {
+      font-size: 11px;
+      color: #999;
+      padding: 6px 14px;
+      text-align: center;
+    }
+    .status.error { color: #e63946; }
+    .status.success { color: #2d6a4f; }
+
+    .empty {
+      padding: 32px 14px;
+      text-align: center;
+      color: #999;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .loading { padding: 24px; text-align: center; color: #999; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h2>Email Remixer</h2>
+    <button class="btn-refresh" onclick="loadEmails()">↻ Refresh</button>
+  </div>
+
+  <div id="content">
+    <div class="loading">Loading emails...</div>
+  </div>
+
+  <div class="footer">
+    <button class="btn-import-all" id="importAllBtn" onclick="importAll()" disabled>Import All</button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+<script>
+  const SERVER = 'http://localhost:3055';
+  let emails = [];
+  let importing = false;
+
+  async function loadEmails() {
+    document.getElementById('content').innerHTML = '<div class="loading">Loading...</div>';
+    document.getElementById('importAllBtn').disabled = true;
+    setStatus('');
+
+    try {
+      const res = await fetch(`${SERVER}/emails`);
+      if (!res.ok) throw new Error('Server error');
+      emails = await res.json();
+
+      if (emails.length === 0) {
+        document.getElementById('content').innerHTML = '<div class="empty">No emails found.<br>Run the parser first.</div>';
+        return;
+      }
+
+      const html = emails.map((e, i) => `
+        <div class="email-item" id="item-${i}">
+          <div class="email-info">
+            <div class="email-subject">${e.meta.subject}</div>
+            <div class="email-meta">${e.meta.date} · ${e.meta.sender}</div>
+          </div>
+          <button class="btn-import" onclick="importOne(${i})" id="btn-${i}">Import</button>
+        </div>
+      `).join('');
+
+      document.getElementById('content').innerHTML = `<div class="email-list">${html}</div>`;
+      document.getElementById('importAllBtn').disabled = false;
+
+    } catch (e) {
+      document.getElementById('content').innerHTML = `<div class="empty">Could not connect to local server.<br><small>Make sure server.js is running.</small></div>`;
+    }
+  }
+
+  async function importOne(index) {
+    if (importing) return;
+    const email = emails[index];
+    const btn = document.getElementById(`btn-${index}`);
+    btn.disabled = true;
+    btn.textContent = '...';
+    setStatus(`Importing: ${email.meta.subject}`);
+
+    try {
+      const res = await fetch(`${SERVER}/email/${encodeURIComponent(email.filename)}`);
+      const data = await res.json();
+      parent.postMessage({ pluginMessage: { type: 'import', data } }, '*');
+      btn.textContent = '✓';
+      btn.classList.add('done');
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = 'Import';
+      setStatus('Failed: ' + e.message, 'error');
+    }
+  }
+
+  async function importAll() {
+    if (importing) return;
+    importing = true;
+    document.getElementById('importAllBtn').disabled = true;
+    setStatus(`Importing ${emails.length} emails...`);
+
+    for (let i = 0; i < emails.length; i++) {
+      await importOne(i);
+      await new Promise(r => setTimeout(r, 400));
+    }
+
+    importing = false;
+    setStatus(`All ${emails.length} emails imported!`, 'success');
+  }
+
+  function setStatus(msg, type) {
+    const el = document.getElementById('status');
+    el.textContent = msg;
+    el.className = 'status' + (type ? ' ' + type : '');
+  }
+
+  window.onmessage = (e) => {
+    const msg = e.data.pluginMessage;
+    if (msg?.type === 'done') setStatus(`Imported "${msg.subject}"`, 'success');
+    else if (msg?.type === 'error') setStatus('Error: ' + msg.message, 'error');
+  };
+
+  loadEmails();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+node_modules/
+credentials.json
+token.json
+processed.json
+last-run-status.json
+output/
+logs/
+email-remixer-plugin/dist/
+email-remixer-plugin/node_modules/

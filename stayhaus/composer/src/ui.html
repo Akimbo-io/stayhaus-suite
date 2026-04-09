@@ -1,0 +1,152 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  :root {
+    --bg: #0A0118; --bg2: #0F0520; --card: #18023A; --line: #2B2338;
+    --text: #fff; --muted: #9B96B0; --purple: #B47CFD; --pink: #FF7FC2;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text);
+    font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif; }
+  .panel { padding: 16px 18px; }
+  .header { display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 18px; border-bottom: 1px solid var(--line); }
+  .header .name { font-weight: 700; }
+  .label { font-size: 10px; text-transform: uppercase; letter-spacing: .18em;
+    color: var(--muted); margin: 14px 0 6px; }
+  select, input[type=text] { width: 100%; background: var(--card); color: var(--text);
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+    font: inherit; outline: none; }
+  select:focus, input:focus { border-color: var(--purple); }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { background: var(--card); color: var(--muted); font-size: 11px;
+    padding: 6px 11px; border-radius: 99px; cursor: pointer; border: 1px solid var(--line); }
+  .chip.active { background: linear-gradient(90deg, var(--purple), var(--pink));
+    color: var(--bg); font-weight: 700; border-color: transparent; }
+  .section-row { background: var(--card); border: 1px solid var(--line);
+    border-radius: 8px; padding: 9px 12px; margin-bottom: 6px;
+    display: flex; justify-content: space-between; align-items: center; }
+  .section-row select { width: auto; padding: 4px 8px; font-size: 11px; }
+  button.primary { width: 100%; padding: 13px; border: 0; border-radius: 99px;
+    background: linear-gradient(90deg, var(--purple), var(--pink));
+    color: var(--bg); font-weight: 800; font-size: 13px; cursor: pointer;
+    margin-top: 18px; }
+  button.primary:disabled { opacity: .4; cursor: not-allowed; }
+  .status { margin-top: 10px; font-size: 11px; color: var(--muted); text-align: center; min-height: 14px; }
+  .status.error { color: var(--pink); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="name">StayHaus Composer</div>
+  <div style="font-size: 11px; color: var(--muted)">v0.1</div>
+</div>
+
+<div class="panel">
+  <div class="label">Brand</div>
+  <select id="brand"><option>Loading...</option></select>
+
+  <div class="label">Flow</div>
+  <div class="chips" id="flows">
+    <span class="chip active" data-flow="welcome">Welcome</span>
+    <span class="chip" data-flow="cart">Cart</span>
+    <span class="chip" data-flow="post-purchase">Post-Purchase</span>
+    <span class="chip" data-flow="winback">Winback</span>
+    <span class="chip" data-flow="browse">Browse</span>
+  </div>
+
+  <div class="label">Sections</div>
+  <div id="sections">
+    <div class="section-row">
+      <span>Hero</span>
+      <select data-section="hero"><option>v1</option><option>v2</option><option>v3</option></select>
+    </div>
+    <div class="section-row">
+      <span>Body</span>
+      <select data-section="body"><option>v1</option><option>v2</option></select>
+    </div>
+    <div class="section-row">
+      <span>CTA</span>
+      <select data-section="cta"><option>v1</option><option>v2</option></select>
+    </div>
+    <div class="section-row">
+      <span>Footer</span>
+      <select data-section="footer"><option>v1</option></select>
+    </div>
+  </div>
+
+  <div class="label">Offer (free text)</div>
+  <input id="offer" type="text" placeholder="e.g. 20% off, ends Sunday" />
+
+  <button id="generate" class="primary" disabled>Generate →</button>
+  <div class="status" id="status">Loading brands...</div>
+</div>
+
+<script>
+  const $ = (sel) => document.querySelector(sel);
+  const status = $('#status');
+  let brands = [];
+  let activeFlow = 'welcome';
+
+  // Fetch brands.json on load (the plugin sandbox can't fetch directly,
+  // so the UI does it — networkAccess in manifest allows stayhaus.eu)
+  fetch('https://stayhaus.eu/brands.json', { cache: 'no-store' })
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(doc => {
+      brands = doc.brands || [];
+      const sel = $('#brand');
+      sel.innerHTML = brands.map(b => `<option value="${b.slug}">${b.name}</option>`).join('');
+      $('#generate').disabled = brands.length === 0;
+      status.textContent = `${brands.length} brand${brands.length === 1 ? '' : 's'} loaded`;
+    })
+    .catch(err => {
+      status.textContent = `Can't reach stayhaus.eu (${err}).`;
+      status.classList.add('error');
+    });
+
+  // Flow chip selection
+  document.querySelectorAll('#flows .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('#flows .chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      activeFlow = chip.dataset.flow;
+    });
+  });
+
+  // Generate button
+  $('#generate').addEventListener('click', () => {
+    const brandSlug = $('#brand').value;
+    const brand = brands.find(b => b.slug === brandSlug);
+    if (!brand) return;
+
+    const sections = Array.from(document.querySelectorAll('[data-section]'))
+      .map(s => ({ section: s.dataset.section, variant: s.value }));
+
+    const offer = $('#offer').value.trim();
+
+    parent.postMessage({
+      pluginMessage: { type: 'generate', brand, flow: activeFlow, sections, offer }
+    }, '*');
+
+    status.textContent = 'Generating...';
+    status.classList.remove('error');
+  });
+
+  // Listen for messages from the plugin sandbox
+  window.onmessage = (e) => {
+    const msg = e.data.pluginMessage;
+    if (!msg) return;
+    if (msg.type === 'done') {
+      status.textContent = msg.text || 'Done.';
+      status.classList.remove('error');
+    } else if (msg.type === 'error') {
+      status.textContent = msg.text || 'Error.';
+      status.classList.add('error');
+    }
+  };
+</script>
+</body>
+</html>

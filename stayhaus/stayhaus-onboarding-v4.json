@@ -1,0 +1,346 @@
+{
+  "name": "StayHaus - Онбординг на клиент v4",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "StayHaus - Онбординг на нов клиент",
+        "formDescription": "Попълнете данните за вашия бранд, за да стартираме работата заедно.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Име на бранда",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "напр. Mushpresso"
+            },
+            {
+              "fieldLabel": "Уебсайт",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "напр. https://mushpresso.shop"
+            },
+            {
+              "fieldLabel": "Описание на бранда",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "2-3 изречения: кои сте, какъв е тонът ви, какво ви отличава"
+            },
+            {
+              "fieldLabel": "Какво искат клиентите",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "Болки на клиентите, желани резултати, какво ги мотивира да купуват"
+            },
+            {
+              "fieldLabel": "Желан резултат",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "Какво искат клиентите да постигнат с вашия продукт?"
+            },
+            {
+              "fieldLabel": "Защо нас",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "Какво най-често казват клиентите, че ги е накарало да ви изберат?"
+            },
+            {
+              "fieldLabel": "Диференциация",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "Какво отличава вашия продукт от пазара?"
+            },
+            {
+              "fieldLabel": "USP",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "Ясен, конкретен списък с уникални предимства"
+            },
+            {
+              "fieldLabel": "Трудно копируеми предимства",
+              "fieldType": "textarea",
+              "requiredField": false,
+              "placeholder": "Реални предимства, които конкуренцията не може лесно да копира"
+            },
+            {
+              "fieldLabel": "Едно изречение - защо да изберат вас",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "Едно изречение: защо някой трябва да избере точно вас"
+            },
+            {
+              "fieldLabel": "Google Drive папка (линк)",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "Линк към споделена Drive папка с лого, снимки, асети"
+            },
+            {
+              "fieldLabel": "Брандбук / насоки за бранда",
+              "fieldType": "textarea",
+              "requiredField": false,
+              "placeholder": "Шрифтове, цветове, правила за комуникация (или линк към брандбук)"
+            },
+            {
+              "fieldLabel": "Необходими езици",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "напр. Български, Румънски, Гръцки"
+            },
+            {
+              "fieldLabel": "Име на одобряващия",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "Кой одобрява имейл чернови?"
+            },
+            {
+              "fieldLabel": "Имейл на одобряващия",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "Имейл на човека, който одобрява чернови"
+            }
+          ]
+        },
+        "options": {
+          "respondWithData": false,
+          "formSubmittedText": "Благодарим! Вашият клиентски портал се създава. Ще получите достъп скоро."
+        }
+      },
+      "id": "form-trigger",
+      "name": "Онбординг Форма",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [220, 300],
+      "webhookId": "stayhaus-onboarding"
+    },
+    {
+      "parameters": {
+        "resource": "page",
+        "operation": "create",
+        "parent": {
+          "__rl": true,
+          "value": "33be7f10596f8037b62ac8c1e5d80bb3",
+          "mode": "id"
+        },
+        "title": "={{ 'Клиентски портал ' + $json['Име на бранда'] }}"
+      },
+      "id": "notion-create-portal",
+      "name": "Създай Клиентски Портал",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "operation": "append",
+        "blockId": "={{ $json.id }}",
+        "blockUi": {
+          "blockValues": [
+            {
+              "type": "callout",
+              "text": "={{ 'Добре дошли в клиентския портал на ' + $('Онбординг Форма').item.json['Име на бранда'] + '!' }}"
+            },
+            {
+              "type": "divider"
+            },
+            {
+              "type": "heading_2",
+              "text": "Описание на бранда"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Онбординг Форма').item.json['Описание на бранда'] }}"
+            },
+            {
+              "type": "heading_2",
+              "text": "Какво искат клиентите"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Онбординг Форма').item.json['Какво искат клиентите'] }}"
+            },
+            {
+              "type": "heading_2",
+              "text": "Желан резултат"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Онбординг Форма').item.json['Желан резултат'] }}"
+            },
+            {
+              "type": "heading_2",
+              "text": "Защо нас"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Онбординг Форма').item.json['Защо нас'] }}"
+            },
+            {
+              "type": "heading_2",
+              "text": "Диференциация"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Онбординг Форма').item.json['Диференциация'] }}"
+            },
+            {
+              "type": "heading_2",
+              "text": "USP"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Онбординг Форма').item.json['USP'] }}"
+            },
+            {
+              "type": "heading_2",
+              "text": "Трудно копируеми предимства"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Онбординг Форма').item.json['Трудно копируеми предимства'] }}"
+            },
+            {
+              "type": "heading_2",
+              "text": "Едно изречение - защо да изберат вас"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Онбординг Форма').item.json['Едно изречение - защо да изберат вас'] }}"
+            },
+            {
+              "type": "divider"
+            },
+            {
+              "type": "heading_2",
+              "text": "Достъп и асети"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ 'Уебсайт: ' + $('Онбординг Форма').item.json['Уебсайт'] }}"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ 'Google Drive: ' + $('Онбординг Форма').item.json['Google Drive папка (линк)'] }}"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ 'Брандбук: ' + ($('Онбординг Форма').item.json['Брандбук / насоки за бранда'] || 'Не е предоставен') }}"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ 'Езици: ' + $('Онбординг Форма').item.json['Необходими езици'] }}"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ 'Одобряващ: ' + $('Онбординг Форма').item.json['Име на одобряващия'] + ' (' + $('Онбординг Форма').item.json['Имейл на одобряващия'] + ')' }}"
+            }
+          ]
+        }
+      },
+      "id": "notion-add-content",
+      "name": "Добави Информация за Бранда",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "resource": "page",
+        "operation": "create",
+        "parent": {
+          "__rl": true,
+          "value": "={{ $('Създай Клиентски Портал').item.json.id }}",
+          "mode": "id"
+        },
+        "title": "Ресурси"
+      },
+      "id": "notion-resources",
+      "name": "Създай Ресурси",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [940, 140]
+    },
+    {
+      "parameters": {
+        "resource": "page",
+        "operation": "create",
+        "parent": {
+          "__rl": true,
+          "value": "={{ $('Създай Клиентски Портал').item.json.id }}",
+          "mode": "id"
+        },
+        "title": "Достъп"
+      },
+      "id": "notion-access",
+      "name": "Създай Достъп",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [940, 300]
+    },
+    {
+      "parameters": {
+        "resource": "page",
+        "operation": "create",
+        "parent": {
+          "__rl": true,
+          "value": "={{ $('Създай Клиентски Портал').item.json.id }}",
+          "mode": "id"
+        },
+        "title": "Месечни Отчети"
+      },
+      "id": "notion-reports",
+      "name": "Създай Месечни Отчети",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [940, 460]
+    }
+  ],
+  "connections": {
+    "Онбординг Форма": {
+      "main": [
+        [
+          {
+            "node": "Създай Клиентски Портал",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Създай Клиентски Портал": {
+      "main": [
+        [
+          {
+            "node": "Добави Информация за Бранда",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Добави Информация за Бранда": {
+      "main": [
+        [
+          {
+            "node": "Създай Ресурси",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Създай Достъп",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Създай Месечни Отчети",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

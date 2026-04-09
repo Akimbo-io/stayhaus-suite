@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "ES6",
+    "module": "commonjs",
+    "strict": true,
+    "outDir": "dist",
+    "typeRoots": ["node_modules/@figma"]
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -1,0 +1,7 @@
+.env
+__pycache__/
+*.pyc
+.claude/skills/
+.superpowers/
+composer/node_modules/
+composer/dist/

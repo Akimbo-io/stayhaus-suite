@@ -1,0 +1,414 @@
+{
+  "name": "StayHaus - Client Onboarding",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "StayHaus - Client Onboarding",
+        "formDescription": "Fill in your brand details to get started with StayHaus.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Brand Name",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "e.g. Mushpresso"
+            },
+            {
+              "fieldLabel": "Website URL",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "e.g. https://mushpresso.shop"
+            },
+            {
+              "fieldLabel": "Brand Overview",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "2-3 sentences: who you are, your tone, what sets you apart"
+            },
+            {
+              "fieldLabel": "Customer Insights",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "Customer pains, desired outcomes, what motivates them to buy"
+            },
+            {
+              "fieldLabel": "Desired Outcome",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "What do customers want to achieve with your product?"
+            },
+            {
+              "fieldLabel": "Why Us",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "What do customers most often say makes them choose you?"
+            },
+            {
+              "fieldLabel": "Differentiation",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "What sets your product apart from the market?"
+            },
+            {
+              "fieldLabel": "USPs",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "Clear, concrete list of unique selling points"
+            },
+            {
+              "fieldLabel": "Hard-to-Copy Advantages",
+              "fieldType": "textarea",
+              "requiredField": false,
+              "placeholder": "Real moats - what competitors can't easily replicate"
+            },
+            {
+              "fieldLabel": "One-Sentence Pitch",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "One sentence: why someone should choose you"
+            },
+            {
+              "fieldLabel": "Klaviyo API Key",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "Your Klaviyo private API key"
+            },
+            {
+              "fieldLabel": "Google Drive Folder URL",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "Link to your shared Drive folder with assets, logos, photos"
+            },
+            {
+              "fieldLabel": "Brand Guidelines",
+              "fieldType": "textarea",
+              "requiredField": false,
+              "placeholder": "Fonts, colors, voice rules, do's and don'ts (or link to brand book)"
+            },
+            {
+              "fieldLabel": "Product Categories",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "List your main product categories"
+            },
+            {
+              "fieldLabel": "Languages Required",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "e.g. Bulgarian, Romanian, Greek"
+            },
+            {
+              "fieldLabel": "Approver Name",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "Who signs off on email drafts?"
+            },
+            {
+              "fieldLabel": "Approver Email",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "Email of the person who approves drafts"
+            }
+          ]
+        },
+        "options": {
+          "respondWithData": false,
+          "formSubmittedText": "Thank you! Your client portal is being created. You'll receive access shortly."
+        }
+      },
+      "id": "form-trigger",
+      "name": "Onboarding Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [220, 300],
+      "webhookId": "stayhaus-onboarding"
+    },
+    {
+      "parameters": {
+        "resource": "page",
+        "operation": "create",
+        "parent": {
+          "__rl": true,
+          "value": "33be7f10596f8056b3e5e2872274fb44",
+          "mode": "id"
+        },
+        "title": "={{ 'Клиентски портал ' + $json['Brand Name'] }}",
+        "propertiesUi": {
+          "propertyValues": []
+        }
+      },
+      "id": "notion-create-portal",
+      "name": "Create Client Portal Page",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [460, 300],
+      "credentials": {
+        "notionApi": {
+          "id": "NOTION_CREDENTIAL_ID",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "block",
+        "operation": "append",
+        "blockId": "={{ $json.id }}",
+        "blockUi": {
+          "blockValues": [
+            {
+              "type": "callout",
+              "text": "={{ 'Добре дошли в клиентския портал на ' + $('Onboarding Form').item.json['Brand Name'] + '! Тук ще намерите всичко свързано с вашите имейл маркетинг кампании.' }}"
+            },
+            {
+              "type": "divider"
+            },
+            {
+              "type": "heading_2",
+              "text": "Brand Overview"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Onboarding Form').item.json['Brand Overview'] }}"
+            },
+            {
+              "type": "heading_2",
+              "text": "Customer Insights"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Onboarding Form').item.json['Customer Insights'] }}"
+            },
+            {
+              "type": "heading_2",
+              "text": "Desired Outcome"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Onboarding Form').item.json['Desired Outcome'] }}"
+            },
+            {
+              "type": "heading_2",
+              "text": "Why Us"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Onboarding Form').item.json['Why Us'] }}"
+            },
+            {
+              "type": "heading_2",
+              "text": "Differentiation"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Onboarding Form').item.json['Differentiation'] }}"
+            },
+            {
+              "type": "heading_2",
+              "text": "USPs"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Onboarding Form').item.json['USPs'] }}"
+            },
+            {
+              "type": "heading_2",
+              "text": "Hard-to-Copy Advantages"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Onboarding Form').item.json['Hard-to-Copy Advantages'] }}"
+            },
+            {
+              "type": "heading_2",
+              "text": "One-Sentence Pitch"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ $('Onboarding Form').item.json['One-Sentence Pitch'] }}"
+            },
+            {
+              "type": "divider"
+            },
+            {
+              "type": "heading_2",
+              "text": "Access & Assets"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ 'Google Drive: ' + $('Onboarding Form').item.json['Google Drive Folder URL'] }}"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ 'Brand Guidelines: ' + $('Onboarding Form').item.json['Brand Guidelines'] }}"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ 'Product Categories: ' + $('Onboarding Form').item.json['Product Categories'] }}"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ 'Languages: ' + $('Onboarding Form').item.json['Languages Required'] }}"
+            },
+            {
+              "type": "paragraph",
+              "text": "={{ 'Approver: ' + $('Onboarding Form').item.json['Approver Name'] + ' (' + $('Onboarding Form').item.json['Approver Email'] + ')' }}"
+            }
+          ]
+        }
+      },
+      "id": "notion-add-content",
+      "name": "Add Brand Info Content",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [700, 300],
+      "credentials": {
+        "notionApi": {
+          "id": "NOTION_CREDENTIAL_ID",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "page",
+        "operation": "create",
+        "parent": {
+          "__rl": true,
+          "value": "={{ $('Create Client Portal Page').item.json.id }}",
+          "mode": "id"
+        },
+        "title": "Ресурси"
+      },
+      "id": "notion-resources",
+      "name": "Create Ресурси Page",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [940, 140],
+      "credentials": {
+        "notionApi": {
+          "id": "NOTION_CREDENTIAL_ID",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "page",
+        "operation": "create",
+        "parent": {
+          "__rl": true,
+          "value": "={{ $('Create Client Portal Page').item.json.id }}",
+          "mode": "id"
+        },
+        "title": "Достъп"
+      },
+      "id": "notion-access",
+      "name": "Create Достъп Page",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [940, 300],
+      "credentials": {
+        "notionApi": {
+          "id": "NOTION_CREDENTIAL_ID",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "page",
+        "operation": "create",
+        "parent": {
+          "__rl": true,
+          "value": "={{ $('Create Client Portal Page').item.json.id }}",
+          "mode": "id"
+        },
+        "title": "Месечни Отчети"
+      },
+      "id": "notion-reports",
+      "name": "Create Месечни Отчети Page",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [940, 460],
+      "credentials": {
+        "notionApi": {
+          "id": "NOTION_CREDENTIAL_ID",
+          "name": "Notion API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Onboarding Form').item.json['Approver Email'] }}",
+        "subject": "={{ 'New Client Onboarded: ' + $('Onboarding Form').item.json['Brand Name'] }}",
+        "message": "={{ 'A new client portal has been created for ' + $('Onboarding Form').item.json['Brand Name'] + '.\\n\\nNotion Portal: ' + $('Create Client Portal Page').item.json.url + '\\n\\nApprover: ' + $('Onboarding Form').item.json['Approver Name'] + ' (' + $('Onboarding Form').item.json['Approver Email'] + ')\\n\\nLanguages: ' + $('Onboarding Form').item.json['Languages Required'] }}"
+      },
+      "id": "send-email",
+      "name": "Notify Alex",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1180, 300]
+    }
+  ],
+  "connections": {
+    "Onboarding Form": {
+      "main": [
+        [
+          {
+            "node": "Create Client Portal Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Client Portal Page": {
+      "main": [
+        [
+          {
+            "node": "Add Brand Info Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Brand Info Content": {
+      "main": [
+        [
+          {
+            "node": "Create Ресурси Page",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create Достъп Page",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create Месечни Отчети Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Достъп Page": {
+      "main": [
+        [
+          {
+            "node": "Notify Alex",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

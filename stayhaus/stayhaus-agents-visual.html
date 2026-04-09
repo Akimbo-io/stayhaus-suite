@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>StayHaus × Alex — Agent System Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,800&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0d0d0a;
+    --paper:#f1ece1;
+    --paper-2:#e6dfcf;
+    --rule:#0d0d0a;
+    --accent:#ff4d1f;
+    --accent-2:#1d3fff;
+    --green:#0a7a3b;
+    --muted:#6b6557;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:"Fraunces",serif;font-feature-settings:"ss01","ss02";}
+  body{
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(255,77,31,.05), transparent 40%),
+      radial-gradient(circle at 90% 90%, rgba(29,63,255,.05), transparent 50%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  .mono{font-family:"JetBrains Mono",monospace;font-weight:400;letter-spacing:.02em}
+  .wrap{max-width:1320px;margin:0 auto;padding:48px 56px 120px}
+
+  /* MASTHEAD */
+  .masthead{
+    border-top:2px solid var(--ink);
+    border-bottom:2px solid var(--ink);
+    padding:18px 0;
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:"JetBrains Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:.18em;
+  }
+  .masthead .dot{display:inline-block;width:8px;height:8px;background:var(--accent);border-radius:50%;margin-right:8px;vertical-align:middle}
+  h1.title{
+    font-family:"Fraunces",serif;
+    font-weight:300;
+    font-size:clamp(64px,11vw,180px);
+    line-height:.84;
+    letter-spacing:-.04em;
+    margin:36px 0 0;
+    font-variation-settings:"opsz" 144;
+  }
+  h1.title em{font-style:italic;font-weight:400;color:var(--accent)}
+  h1.title .amp{font-style:italic;font-weight:300;color:var(--accent-2)}
+  .subtitle{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:1px solid var(--ink);
+    padding:28px 0 18px;margin-top:24px;
+  }
+  .subtitle p{margin:0;max-width:560px;font-size:18px;line-height:1.45;font-weight:300}
+  .subtitle .meta{font-family:"JetBrains Mono",monospace;font-size:10px;text-transform:uppercase;letter-spacing:.18em;text-align:right;line-height:1.8}
+  .subtitle .meta b{color:var(--accent)}
+
+  /* SECTION HEAD */
+  .sec-head{display:flex;align-items:baseline;gap:18px;margin:72px 0 22px;border-bottom:1px solid var(--ink);padding-bottom:10px}
+  .sec-head .num{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}
+  .sec-head h2{margin:0;font-family:"Fraunces",serif;font-weight:400;font-size:34px;letter-spacing:-.02em}
+  .sec-head h2 em{font-style:italic;color:var(--muted);font-weight:300}
+
+  /* FLOW DIAGRAM */
+  .flow{
+    position:relative;
+    background:var(--paper-2);
+    border:2px solid var(--ink);
+    padding:40px 36px 56px;
+    box-shadow:10px 10px 0 var(--ink);
+  }
+  .flow .corner{position:absolute;top:-2px;right:-2px;background:var(--ink);color:var(--paper);padding:8px 14px;font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase}
+  .stages{display:grid;grid-template-columns:repeat(7,1fr);gap:0;margin-top:24px;position:relative}
+  .stage{
+    border-right:1px dashed rgba(13,13,10,.35);
+    padding:14px 12px 18px;
+    position:relative;
+    min-height:230px;
+  }
+  .stage:last-child{border-right:none}
+  .stage .n{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.18em;color:var(--accent)}
+  .stage h4{font-family:"Fraunces",serif;font-weight:500;font-size:17px;line-height:1.15;margin:8px 0 10px;letter-spacing:-.01em}
+  .stage h4 em{font-style:italic;font-weight:300}
+  .stage p{font-family:"JetBrains Mono",monospace;font-size:10px;line-height:1.55;color:#3a3730;margin:0 0 6px}
+  .stage .tool{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;background:var(--ink);color:var(--paper);padding:3px 6px;margin-top:8px}
+  .stage .tool.alt{background:var(--accent);color:var(--paper)}
+  .stage .tool.alt2{background:var(--accent-2)}
+  .stage .tool.alt3{background:var(--green)}
+  .stage::before{
+    content:"";position:absolute;top:46%;right:-7px;width:12px;height:12px;
+    background:var(--paper-2);border-top:2px solid var(--ink);border-right:2px solid var(--ink);
+    transform:rotate(45deg);z-index:2;
+  }
+  .stage:last-child::before{display:none}
+  .pulse{
+    position:absolute;left:14px;top:14px;width:8px;height:8px;border-radius:50%;background:var(--accent);
+    box-shadow:0 0 0 0 rgba(255,77,31,.6);animation:pulse 2.4s infinite;
+  }
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(255,77,31,.6)}
+    70%{box-shadow:0 0 0 10px rgba(255,77,31,0)}
+    100%{box-shadow:0 0 0 0 rgba(255,77,31,0)}
+  }
+
+  /* AGENT CARDS */
+  .agent-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px;margin-top:8px}
+  .card{
+    grid-column:span 4;
+    background:var(--paper);
+    border:1.5px solid var(--ink);
+    padding:22px 22px 26px;
+    position:relative;
+    transition:transform .25s ease, box-shadow .25s ease;
+  }
+  .card:hover{transform:translate(-3px,-3px);box-shadow:6px 6px 0 var(--ink)}
+  .card.wide{grid-column:span 6}
+  .card.full{grid-column:span 12}
+  .card .tag{
+    font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+    display:flex;justify-content:space-between;align-items:center;color:var(--muted);
+    border-bottom:1px solid var(--ink);padding-bottom:8px;margin-bottom:14px;
+  }
+  .card .tag b{color:var(--accent)}
+  .card h3{font-family:"Fraunces",serif;font-weight:400;font-size:28px;line-height:1.05;margin:0 0 6px;letter-spacing:-.015em}
+  .card h3 em{font-style:italic;color:var(--accent-2)}
+  .card .role{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);margin-bottom:14px}
+  .card ul{list-style:none;padding:0;margin:0}
+  .card li{
+    font-family:"JetBrains Mono",monospace;font-size:11px;line-height:1.55;
+    padding:6px 0 6px 18px;position:relative;border-bottom:1px dotted rgba(13,13,10,.2);
+  }
+  .card li:last-child{border-bottom:none}
+  .card li::before{content:"→";position:absolute;left:0;color:var(--accent);font-family:"Fraunces",serif}
+  .card .stack{margin-top:14px;display:flex;flex-wrap:wrap;gap:6px}
+  .stack span{
+    font-family:"JetBrains Mono",monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;
+    border:1px solid var(--ink);padding:3px 7px;
+  }
+  .card .num-big{
+    position:absolute;top:14px;right:18px;font-family:"Fraunces",serif;font-style:italic;font-weight:300;
+    font-size:64px;line-height:1;color:rgba(13,13,10,.08);
+  }
+
+  /* INTAKE */
+  .intake{
+    display:grid;grid-template-columns:1.1fr .9fr;gap:0;
+    border:2px solid var(--ink);background:var(--paper);
+  }
+  .intake .left{padding:32px 36px;border-right:2px solid var(--ink)}
+  .intake .right{padding:32px 36px;background:var(--ink);color:var(--paper)}
+  .intake h3{font-family:"Fraunces",serif;font-weight:400;font-size:26px;margin:0 0 18px;letter-spacing:-.01em}
+  .intake .right h3{color:var(--paper)}
+  .intake .right h3 em{color:var(--accent);font-style:italic}
+  .qrow{display:flex;gap:14px;padding:11px 0;border-bottom:1px solid rgba(13,13,10,.2);font-family:"JetBrains Mono",monospace;font-size:11px;line-height:1.5}
+  .qrow .qn{color:var(--accent);min-width:24px}
+  .intake .right .qrow{border-bottom:1px solid rgba(241,236,225,.15)}
+  .intake .right .qn{color:var(--accent)}
+
+  /* TRANSLATION DETAIL */
+  .translate{
+    margin-top:24px;
+    border:2px solid var(--ink);
+    background:var(--paper);
+    padding:34px 36px 40px;
+    position:relative;
+  }
+  .translate::before{
+    content:"CRITICAL PATH";position:absolute;top:-12px;left:24px;
+    background:var(--accent);color:var(--paper);
+    font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.2em;padding:5px 10px;
+  }
+  .translate h3{font-family:"Fraunces",serif;font-weight:400;font-size:30px;margin:6px 0 22px;letter-spacing:-.015em}
+  .pipeline{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+  .pipe{
+    border:1.5px solid var(--ink);padding:14px 14px 18px;background:var(--paper-2);
+    position:relative;min-height:160px;
+  }
+  .pipe .step{font-family:"JetBrains Mono",monospace;font-size:9px;letter-spacing:.18em;color:var(--accent);text-transform:uppercase}
+  .pipe h5{font-family:"Fraunces",serif;font-weight:500;font-size:16px;margin:8px 0 8px;line-height:1.1}
+  .pipe p{font-family:"JetBrains Mono",monospace;font-size:10px;line-height:1.5;margin:0;color:#3a3730}
+  .pipe .icon{position:absolute;bottom:10px;right:12px;font-family:"Fraunces",serif;font-style:italic;font-size:32px;color:rgba(13,13,10,.15);line-height:1}
+
+  /* QUOTE / OPEN Qs */
+  .qs{margin-top:32px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .qs .open{border:2px solid var(--ink);padding:28px 32px;background:var(--paper)}
+  .qs .quote{
+    border:2px solid var(--ink);padding:32px;background:var(--ink);color:var(--paper);
+    font-family:"Fraunces",serif;font-style:italic;font-weight:300;font-size:26px;line-height:1.25;letter-spacing:-.01em;
+    position:relative;
+  }
+  .qs .quote::before{
+    content:"“";position:absolute;top:-30px;left:18px;font-size:140px;line-height:1;color:var(--accent);font-style:normal;
+  }
+  .qs .quote .by{display:block;margin-top:18px;font-family:"JetBrains Mono",monospace;font-style:normal;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}
+  .qs h3{font-family:"Fraunces",serif;font-weight:400;font-size:22px;margin:0 0 14px;letter-spacing:-.01em}
+  .qs ol{margin:0;padding-left:18px;font-family:"JetBrains Mono",monospace;font-size:11px;line-height:1.7}
+  .qs li{padding:3px 0}
+
+  /* FOOTER */
+  footer{
+    margin-top:80px;border-top:2px solid var(--ink);padding-top:18px;
+    display:flex;justify-content:space-between;
+    font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  }
+
+  @media (max-width:1024px){
+    .stages{grid-template-columns:repeat(2,1fr)}
+    .stage{border-right:none;border-bottom:1px dashed rgba(13,13,10,.35)}
+    .stage::before{display:none}
+    .card,.card.wide{grid-column:span 12}
+    .pipeline{grid-template-columns:repeat(2,1fr)}
+    .intake{grid-template-columns:1fr}
+    .intake .left{border-right:none;border-bottom:2px solid var(--ink)}
+    .qs{grid-template-columns:1fr}
+    h1.title{font-size:64px}
+    .wrap{padding:32px 24px 80px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- MASTHEAD -->
+  <div class="masthead">
+    <div><span class="dot"></span>Vol. 01 — Agent System Blueprint</div>
+    <div>StayHaus × Alex Agency</div>
+    <div>Filed 2026 · 04 · 07</div>
+  </div>
+
+  <h1 class="title">Stay<em>Haus</em><br>Agent <span class="amp">&amp;</span> Ops</h1>
+
+  <div class="subtitle">
+    <p>An end-to-end agent network that takes a new e-commerce brand from <em>onboarding</em> to <em>localized Klaviyo flows live in production</em> — with the agency in the loop, not in the weeds.</p>
+    <div class="meta">
+      Operators / <b>Valentin · Alex</b><br>
+      Stack / Notion · Klaviyo · Miro · Figma<br>
+      Status / <b>Spec — v0.1</b>
+    </div>
+  </div>
+
+  <!-- FLOW DIAGRAM -->
+  <div class="sec-head">
+    <span class="num">§ 01</span>
+    <h2>The Pipeline <em>— from signup to send</em></h2>
+  </div>
+
+  <div class="flow">
+    <div class="corner">SYSTEM MAP</div>
+    <div class="stages">
+      <div class="stage">
+        <span class="pulse"></span>
+        <div class="n">01 / INTAKE</div>
+        <h4>Onboarding <em>Agent</em></h4>
+        <p>Brand profile, ICP, USPs, Klaviyo access, Drive folder.</p>
+        <span class="tool alt">FORM</span>
+      </div>
+      <div class="stage">
+        <div class="n">02 / SPACE</div>
+        <h4>Notion <em>Workspace</em></h4>
+        <p>Template duplicates. All fields auto-populated. Client gets a live dashboard.</p>
+        <span class="tool alt2">NOTION API</span>
+      </div>
+      <div class="stage">
+        <div class="n">03 / PLAN</div>
+        <h4>Flow <em>Architect</em></h4>
+        <p>Picks master Miro templates by product type. Personalizes branches & timing.</p>
+        <span class="tool">MIRO</span>
+      </div>
+      <div class="stage">
+        <div class="n">04 / DESIGN</div>
+        <h4>Visual <em>Agent</em></h4>
+        <p>Pulls assets from Drive. Builds emails on-brand, exports section by section.</p>
+        <span class="tool">FIGMA / CANVA</span>
+      </div>
+      <div class="stage">
+        <div class="n">05 / WRITE</div>
+        <h4>Copy <em>Agent</em></h4>
+        <p>Custom GPT writes subject, preview, body, CTA in the brand's voice.</p>
+        <span class="tool alt">CUSTOM GPT</span>
+      </div>
+      <div class="stage">
+        <div class="n">06 / LOCALIZE</div>
+        <h4>Translate <em>+ Compress</em></h4>
+        <p>Slices email. Text → translate. Image-text → nano banana. Compress all.</p>
+        <span class="tool alt3">NANO BANANA</span>
+      </div>
+      <div class="stage">
+        <div class="n">07 / SHIP</div>
+        <h4>Klaviyo <em>Deploy</em></h4>
+        <p>Uploads, builds the flow, tags by language, leaves as draft for approval.</p>
+        <span class="tool alt2">KLAVIYO API</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- AGENT CARDS -->
+  <div class="sec-head">
+    <span class="num">§ 02</span>
+    <h2>The Agents <em>— seven specialists, one studio</em></h2>
+  </div>
+
+  <div class="agent-grid">
+
+    <div class="card">
+      <div class="num-big">01</div>
+      <div class="tag"><span>Agent · Intake</span><b>● live</b></div>
+      <h3>Onboarding <em>Agent</em></h3>
+      <div class="role">Captures everything we need from a new brand in one guided flow.</div>
+      <ul>
+        <li>Collects Klaviyo direct access (API key)</li>
+        <li>Brand overview, tone, differentiators</li>
+        <li>Customer pains, desired outcomes, USPs</li>
+        <li>Google Drive folder + brand guidelines</li>
+        <li>Triggers all downstream agents on submit</li>
+      </ul>
+      <div class="stack"><span>form</span><span>secrets vault</span><span>webhook</span></div>
+    </div>
+
+    <div class="card">
+      <div class="num-big">02</div>
+      <div class="tag"><span>Agent · Space</span><b>● live</b></div>
+      <h3>Notion <em>Dashboard</em></h3>
+      <div class="role">Each client gets their own internal command center.</div>
+      <ul>
+        <li>Duplicates a Notion template on signup</li>
+        <li>Auto-fills brand profile + asset library</li>
+        <li>Flow roadmap: planning → live</li>
+        <li>Campaign calendar + performance snapshots</li>
+        <li>Client + agency see progress in real time</li>
+      </ul>
+      <div class="stack"><span>notion api</span><span>template duplication</span></div>
+    </div>
+
+    <div class="card">
+      <div class="num-big">03</div>
+      <div class="tag"><span>Agent · Plan</span><b>● spec</b></div>
+      <h3>Flow <em>Architect</em></h3>
+      <div class="role">Builds the visual flow blueprint per brand.</div>
+      <ul>
+        <li>Library of Miro master flows: welcome, abandoned cart, post-purchase, winback, browse abandonment</li>
+        <li>Selects + personalizes by product type</li>
+        <li>Outputs board + structured spec for design & copy</li>
+      </ul>
+      <div class="stack"><span>miro</span><span>templates</span></div>
+    </div>
+
+    <div class="card wide">
+      <div class="num-big">04</div>
+      <div class="tag"><span>Agent · Design</span><b>● spec</b></div>
+      <h3>Visual <em>Agent</em> <em>—</em> Figma or Canva</h3>
+      <div class="role">Produces email visuals on-brand, ready to translate.</div>
+      <ul>
+        <li>Pulls brand assets directly from the client's Drive folder</li>
+        <li>Respects brand guidelines: colors, fonts, imagery style</li>
+        <li>Generates per-section: hero, body, CTA, footer</li>
+        <li>Exports in slices so the translation agent can swap pieces cleanly</li>
+      </ul>
+      <div class="stack"><span>figma</span><span>canva</span><span>drive sync</span></div>
+    </div>
+
+    <div class="card wide">
+      <div class="num-big">05</div>
+      <div class="tag"><span>Agent · Copy</span><b>● live</b></div>
+      <h3>Copywriting <em>Agent</em></h3>
+      <div class="role">My existing custom GPT, wired into the pipeline.</div>
+      <ul>
+        <li>Inputs: brand profile, ICP insights, USPs, flow context, product details</li>
+        <li>Outputs: subject line, preview text, body, CTAs</li>
+        <li>Versions per flow stage and per product type</li>
+      </ul>
+      <div class="stack"><span>custom gpt</span><span>brand voice</span></div>
+    </div>
+
+    <div class="card">
+      <div class="num-big">06</div>
+      <div class="tag"><span>Agent · Localize</span><b>● critical</b></div>
+      <h3>Translate <em>+ Compress</em></h3>
+      <div class="role">The hard problem: ship the same email in N languages.</div>
+      <ul>
+        <li>Chops the email into sections</li>
+        <li>Text → translate in place</li>
+        <li>Image-with-text → nano banana regenerates</li>
+        <li>Aggressive compression for inbox weight</li>
+      </ul>
+      <div class="stack"><span>nano banana</span><span>compress</span></div>
+    </div>
+
+    <div class="card">
+      <div class="num-big">07</div>
+      <div class="tag"><span>Agent · Ship</span><b>● spec</b></div>
+      <h3>Klaviyo <em>Deploy</em></h3>
+      <div class="role">Drops finished assets straight into the right Klaviyo account.</div>
+      <ul>
+        <li>Authenticates with credentials from onboarding</li>
+        <li>Uploads images to Klaviyo asset library</li>
+        <li>Builds the email inside the right flow / campaign</li>
+        <li>Tags by language, flow, version — leaves as draft</li>
+      </ul>
+      <div class="stack"><span>klaviyo api</span><span>draft mode</span></div>
+    </div>
+
+  </div>
+
+  <!-- INTAKE QUESTIONS -->
+  <div class="sec-head">
+    <span class="num">§ 03</span>
+    <h2>The Intake Form <em>— the questions every brand answers</em></h2>
+  </div>
+
+  <div class="intake">
+    <div class="left">
+      <h3>Brand &amp; positioning</h3>
+      <div class="qrow"><span class="qn">01</span><span><b>Brand overview</b> — 2–3 sentences. Who you are, your tone, what sets you apart.</span></div>
+      <div class="qrow"><span class="qn">02</span><span><b>Customer insights</b> — pains, desired outcomes, what motivates them to buy.</span></div>
+      <div class="qrow"><span class="qn">03</span><span><b>Desired outcome</b> — what people want to achieve with your product.</span></div>
+      <div class="qrow"><span class="qn">04</span><span><b>Why us</b> — what customers most often say makes them choose you.</span></div>
+      <div class="qrow"><span class="qn">05</span><span><b>Differentiation</b> — what sets your product apart from the market.</span></div>
+      <div class="qrow"><span class="qn">06</span><span><b>USPs</b> — clear, concrete list.</span></div>
+      <div class="qrow"><span class="qn">07</span><span><b>Hard-to-copy advantages</b> — real moats.</span></div>
+      <div class="qrow"><span class="qn">08</span><span><b>One-sentence pitch</b> — why someone should choose you.</span></div>
+    </div>
+    <div class="right">
+      <h3>Access <em>&amp; assets</em></h3>
+      <div class="qrow"><span class="qn">A</span><span>Klaviyo direct access (API key or shared account)</span></div>
+      <div class="qrow"><span class="qn">B</span><span>Master Google Drive folder — assets, logos, lifestyle, product photography</span></div>
+      <div class="qrow"><span class="qn">C</span><span>Brand guidelines — fonts, colors, voice rules, do/don'ts</span></div>
+      <div class="qrow"><span class="qn">D</span><span>Product catalog &amp; categories</span></div>
+      <div class="qrow"><span class="qn">E</span><span>Languages required</span></div>
+      <div class="qrow"><span class="qn">F</span><span>Approver — who signs off on drafts</span></div>
+    </div>
+  </div>
+
+  <!-- TRANSLATION DETAIL -->
+  <div class="sec-head">
+    <span class="num">§ 04</span>
+    <h2>Translation pipeline <em>— the trick that makes this scale</em></h2>
+  </div>
+
+  <div class="translate">
+    <h3>One email, six languages, no rebuilds.</h3>
+    <div class="pipeline">
+      <div class="pipe">
+        <div class="step">01 · INGEST</div>
+        <h5>Slice the email</h5>
+        <p>Break into hero, body blocks, image-text blocks, CTAs, footer.</p>
+        <div class="icon">✂</div>
+      </div>
+      <div class="pipe">
+        <div class="step">02 · CLASSIFY</div>
+        <h5>Text vs image-text</h5>
+        <p>Detect which sections have baked-in text and route them differently.</p>
+        <div class="icon">⌗</div>
+      </div>
+      <div class="pipe">
+        <div class="step">03 · TEXT</div>
+        <h5>Translate in place</h5>
+        <p>Plain text gets swapped directly with localized copy.</p>
+        <div class="icon">A</div>
+      </div>
+      <div class="pipe">
+        <div class="step">04 · IMAGE</div>
+        <h5>Nano banana</h5>
+        <p>Regenerate the image with translated text baked in, on-brand.</p>
+        <div class="icon">★</div>
+      </div>
+      <div class="pipe">
+        <div class="step">05 · COMPRESS</div>
+        <h5>Lighten</h5>
+        <p>Aggressive compression — emails must fly through inboxes.</p>
+        <div class="icon">↧</div>
+      </div>
+      <div class="pipe">
+        <div class="step">06 · ASSEMBLE</div>
+        <h5>Klaviyo blocks</h5>
+        <p>Reassemble as Klaviyo-ready blocks per language.</p>
+        <div class="icon">▣</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OPEN QUESTIONS + QUOTE -->
+  <div class="qs">
+    <div class="open">
+      <h3>Open questions for Alex</h3>
+      <ol>
+        <li>Figma or Canva — which does the agency already live in?</li>
+        <li>How many languages on average per client?</li>
+        <li>Approvals — in Notion, or directly in Klaviyo drafts?</li>
+        <li>Where do we vault Klaviyo credentials post-onboarding?</li>
+        <li>Performance reporting cadence in the dashboard?</li>
+        <li>Template library — who curates the master flows in Miro?</li>
+      </ol>
+    </div>
+    <div class="quote">
+      Onboarding is a form. Everything after is an agent.
+      <span class="by">— StayHaus operating principle</span>
+    </div>
+  </div>
+
+  <footer>
+    <div>StayHaus × Alex</div>
+    <div>Blueprint v0.1</div>
+    <div>2026 · 04 · 07</div>
+  </footer>
+
+</div>
+</body>
+</html>
