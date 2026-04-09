@@ -1,416 +1,648 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,300;9..144,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
   :root {
-    --bg: #f7f7f8;
-    --surface: #ffffff;
-    --surface-hover: #fafafa;
-    --border: #e8e8ec;
-    --border-light: #f0f0f3;
-    --text: #1a1a1e;
-    --text-secondary: #8b8b96;
-    --text-tertiary: #ababb3;
-    --accent: #1a1a1e;
-    --accent-soft: #f0f0f3;
-    --green: #1a8c5a;
-    --green-bg: #ecfdf3;
-    --green-border: #b5e3cc;
-    --red: #c4320a;
-    --red-bg: #fef3f0;
-    --blue: #2563eb;
-    --blue-bg: #eff4ff;
-    --amber: #a16207;
-    --amber-bg: #fefce8;
-    --amber-border: #fde68a;
-    --radius: 10px;
-    --radius-sm: 7px;
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
-    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.04);
-    --shadow-raised: 0 2px 4px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.06), 0 1px 0 rgba(0,0,0,0.04);
-    --shadow-3d: 0 1px 0 rgba(0,0,0,0.05), 0 2px 4px rgba(0,0,0,0.05), 0 4px 8px rgba(0,0,0,0.04);
+    --bg: #0D0B12;
+    --bg2: #14121C;
+    --card: #1C1928;
+    --card-up: #262234;
+    --line: #322E40;
+    --line-sub: rgba(50,46,64,0.55);
+    --text: #F2EFF8;
+    --text-sec: #C0B9D0;
+    --text-muted: #8A8399;
+    --accent: #B47CFD;
+    --accent-dim: rgba(180,124,253,0.15);
+    --accent-line: rgba(180,124,253,0.38);
+    --green: #5CD97E;
+    --green-dim: rgba(92,217,126,0.10);
+    --green-line: rgba(92,217,126,0.28);
+    --amber: #E4A832;
+    --amber-dim: rgba(228,168,50,0.09);
+    --amber-line: rgba(228,168,50,0.25);
+    --red: #E8503A;
+    --red-dim: rgba(232,80,58,0.10);
+    --radius: 8px;
+    --radius-sm: 6px;
+    --mono: 'JetBrains Mono', 'SF Mono', monospace;
+    --body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --display: 'Fraunces', Georgia, serif;
   }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  *{box-sizing:border-box;margin:0;padding:0}
 
-  body {
-    font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 12px;
-    color: var(--text);
-    padding: 20px;
-    background: var(--bg);
-    -webkit-font-smoothing: antialiased;
-  }
-
-  /* Header */
-  .header { margin-bottom: 20px; }
-  .header h2 {
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
-    color: var(--text);
-    margin-bottom: 3px;
-  }
-  .header p {
-    font-size: 11px;
-    color: var(--text-secondary);
-    line-height: 1.4;
+  html,body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--body);
+    font-size:13px;
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
   }
 
-  /* Cards */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px;
-    margin-bottom: 10px;
-    box-shadow: var(--shadow-3d);
-    position: relative;
-  }
-  .card::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 4px; right: 4px;
-    height: 3px;
-    background: linear-gradient(to bottom, transparent, rgba(0,0,0,0.03));
-    border-radius: 0 0 var(--radius) var(--radius);
-    pointer-events: none;
+  body{
+    background-image:
+      radial-gradient(ellipse at 30% -10%, rgba(180,124,253,0.07) 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 110%, rgba(255,127,194,0.04) 0%, transparent 50%);
   }
 
-  /* Labels */
-  label {
-    display: block;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text-secondary);
-    margin-bottom: 6px;
+  /* thin warm accent line */
+  body::before{
+    content:'';position:fixed;top:0;left:0;right:0;
+    height:1px;
+    background:linear-gradient(90deg, transparent 5%, #B47CFD 40%, #FF7FC2 60%, transparent 95%);
+    opacity:0.5;
+    z-index:100;
   }
 
-  /* Selects */
-  select {
-    width: 100%;
-    padding: 8px 10px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    font-size: 12px;
-    font-family: inherit;
-    background: var(--surface);
-    color: var(--text);
-    box-shadow: var(--shadow-sm);
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23ababb3' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    cursor: pointer;
-    transition: border-color 0.15s, box-shadow 0.15s;
-  }
-  select:hover { border-color: #d0d0d6; }
-  select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26,26,30,0.08); }
+  /* Global scrollbar — thin & subtle (body + scan results) */
+  ::-webkit-scrollbar{width:4px;height:4px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(138,131,153,0.45);border-radius:4px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(138,131,153,0.65)}
+  ::-webkit-scrollbar-corner{background:transparent}
 
-  /* Mode toggle */
-  .mode-toggle {
-    display: flex;
-    gap: 2px;
-    padding: 3px;
-    background: var(--accent-soft);
-    border-radius: var(--radius-sm);
-    margin-bottom: 14px;
-  }
-  .mode-btn {
-    flex: 1;
-    padding: 7px 0;
-    text-align: center;
-    font-size: 11px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    border: none;
-    border-radius: 5px;
-    background: transparent;
-    color: var(--text-secondary);
-    transition: all 0.2s ease;
-  }
-  .mode-btn.active {
-    background: var(--surface);
-    color: var(--text);
-    box-shadow: var(--shadow-raised);
-  }
-  .mode-btn:hover:not(.active) { color: var(--text); }
+  /* Preview table scrollbar — wider, more visible (the one that matters) */
+  .preview::-webkit-scrollbar{width:7px;height:7px}
+  .preview::-webkit-scrollbar-track{background:var(--bg2);border-radius:4px}
+  .preview::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:4px}
+  .preview::-webkit-scrollbar-thumb:hover{background:var(--text-sec)}
 
-  /* Action buttons row */
-  .actions { display: flex; gap: 6px; margin-bottom: 14px; }
-  .btn-ghost {
-    font-size: 11px;
-    font-weight: 500;
-    font-family: inherit;
-    padding: 6px 12px;
-    background: var(--surface);
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.15s;
+  /* ── HEADER ── */
+  .header{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding:18px 20px 15px;
+    border-bottom:1px solid var(--line);
   }
-  .btn-ghost:hover { border-color: #d0d0d6; color: var(--text); background: var(--surface-hover); }
-
-  /* Drop zone */
-  .drop-zone {
-    border: 1.5px dashed var(--border);
-    border-radius: var(--radius);
-    padding: 28px 16px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    color: var(--text-tertiary);
-    font-size: 12px;
-    background: var(--surface);
+  .header-title{
+    font-family:var(--display);
+    font-weight:300;
+    font-size:17px;
+    letter-spacing:-0.02em;
+    font-variation-settings:"opsz" 144;
+    color:var(--text);
   }
-  .drop-zone:hover, .drop-zone.dragover {
-    border-color: var(--accent);
-    background: var(--accent-soft);
-    color: var(--text);
+  .header-title em{
+    font-style:italic;
+    color:var(--accent);
+    font-weight:300;
   }
-  .drop-zone.loaded {
-    border-color: var(--green-border);
-    border-style: solid;
-    background: var(--green-bg);
-    color: var(--green);
-    font-weight: 500;
+  .header-ver{
+    font-family:var(--mono);
+    font-size:9px;
+    color:var(--text-muted);
+    letter-spacing:0.08em;
   }
 
-  /* Primary button */
-  .btn-primary {
-    display: block;
-    width: 100%;
-    padding: 11px 20px;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: all 0.15s;
-    background: var(--accent);
-    color: #fff;
-    box-shadow: var(--shadow-raised), inset 0 1px 0 rgba(255,255,255,0.06);
-    margin-top: 14px;
-    position: relative;
-  }
-  .btn-primary::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 3px; right: 3px;
-    height: 3px;
-    background: rgba(0,0,0,0.15);
-    border-radius: 0 0 5px 5px;
-    pointer-events: none;
-  }
-  .btn-primary:hover { background: #2d2d33; transform: translateY(-0.5px); }
-  .btn-primary:active { transform: translateY(0.5px); box-shadow: var(--shadow-sm); }
-  .btn-primary:disabled {
-    background: #d4d4d8;
-    color: #a1a1aa;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-  .btn-primary:disabled::after { display: none; }
+  /* ── CONTENT ── */
+  .content{padding:16px 20px 10px}
 
-  /* Status */
-  .status {
-    margin-top: 10px;
-    padding: 9px 12px;
-    border-radius: var(--radius-sm);
-    font-size: 11px;
-    font-weight: 500;
-    display: none;
-  }
-  .status.info { display: block; background: var(--blue-bg); color: var(--blue); }
-  .status.success { display: block; background: var(--green-bg); color: var(--green); }
-  .status.error { display: block; background: var(--red-bg); color: var(--red); }
-
-  /* Preview table */
-  .preview {
-    margin-top: 10px;
-    max-height: 130px;
-    overflow-y: auto;
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-sm);
-    font-size: 10px;
-    background: var(--surface);
-  }
-  .preview table { width: 100%; border-collapse: collapse; }
-  .preview th {
-    background: var(--bg);
-    padding: 5px 8px;
-    text-align: left;
-    font-weight: 600;
-    font-size: 9px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text-secondary);
-    position: sticky;
-    top: 0;
-    border-bottom: 1px solid var(--border-light);
-  }
-  .preview td {
-    padding: 4px 8px;
-    border-top: 1px solid var(--border-light);
-    color: var(--text);
+  /* ── LABELS ── */
+  .label{
+    font-family:var(--mono);
+    font-size:9px;font-weight:500;
+    text-transform:uppercase;
+    letter-spacing:0.15em;
+    color:var(--text-muted);
+    margin-bottom:6px;
   }
 
-  /* Scan results */
-  .scan-list {
-    margin-top: 8px;
-    max-height: 90px;
-    overflow-y: auto;
-    font-size: 11px;
-    background: var(--surface);
-    border: 1px solid var(--border-light);
-    border-radius: var(--radius-sm);
-    padding: 8px 10px;
+  /* ── DROP ZONE ── */
+  .drop-zone{
+    border:1px dashed var(--line);
+    border-radius:var(--radius);
+    padding:26px 16px;
+    text-align:center;
+    cursor:pointer;
+    transition:all 0.25s ease;
+    background:var(--card);
+    position:relative;
+    display:flex;flex-direction:column;align-items:center;
   }
-  .scan-item { padding: 3px 0; border-bottom: 1px solid var(--border-light); }
-  .scan-item:last-child { border-bottom: none; }
-  .scan-item .name { font-weight: 600; color: var(--text); }
-  .scan-item .content { color: var(--text-secondary); margin-left: 4px; }
-
-  /* Hints */
-  .hint { color: var(--text-tertiary); font-size: 10px; margin-top: 5px; }
-
-  /* Sheet select */
-  .sheet-select { margin-top: 10px; display: none; }
-
-  /* Language tags */
-  .lang-grid { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
-  .lang-tag {
-    font-size: 9px;
-    background: var(--accent-soft);
-    color: var(--text-secondary);
-    padding: 2px 7px;
-    border-radius: 4px;
-    font-weight: 600;
-    letter-spacing: 0.2px;
+  .drop-zone:hover,
+  .drop-zone.dragover{
+    border-color:var(--accent-line);
+    background:var(--accent-dim);
+  }
+  .drop-icon{
+    margin-bottom:6px;
+    color:var(--text-muted);
+    display:flex;justify-content:center;
+    transition:color 0.25s,transform 0.25s;
+  }
+  .drop-zone:hover .drop-icon,
+  .drop-zone.dragover .drop-icon{
+    color:var(--accent);
+    transform:translateY(-2px);
+  }
+  .drop-text{
+    font-size:12px;font-weight:600;
+    color:var(--text);
+    margin-bottom:1px;
+  }
+  .drop-hint{
+    font-size:10px;
+    color:var(--text-muted);
   }
 
-  /* Email meta cards */
-  .email-meta { margin-top: 10px; display: none; }
-  .email-meta-card {
-    background: var(--amber-bg);
-    border: 1px solid var(--amber-border);
-    border-radius: var(--radius-sm);
-    padding: 10px 12px;
-    margin-bottom: 6px;
-    box-shadow: var(--shadow-sm);
+  /* loaded state */
+  .drop-zone.loaded{
+    border-color:var(--green-line);
+    border-style:solid;
+    background:var(--green-dim);
+    padding:14px 16px;
+    flex-direction:column;
   }
-  .email-meta-card h4 {
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--amber);
-    margin-bottom: 6px;
+  .drop-zone.loaded:hover{
+    border-color:var(--accent-line);
+    background:var(--accent-dim);
   }
-  .email-meta-lang { font-size: 11px; margin-bottom: 3px; line-height: 1.4; }
-  .email-meta-lang .lang-code {
-    font-weight: 700;
-    color: var(--amber);
-    display: inline-block;
-    width: 22px;
-    font-size: 10px;
+  .drop-zone.loaded .drop-icon{
+    display:flex;
+    margin-bottom:6px;
+    color:var(--green);
+    transform:none;
   }
-  .email-meta-lang .text { color: #451a03; }
-  .email-meta-expand {
-    font-size: 10px;
-    color: var(--amber);
-    cursor: pointer;
-    font-weight: 500;
-    margin-top: 4px;
-    display: inline-block;
-    opacity: 0.8;
+  .drop-zone.loaded:hover .drop-icon{
+    color:var(--accent);
+    transform:none;
   }
-  .email-meta-expand:hover { opacity: 1; }
+  .drop-zone.loaded .drop-text{
+    font-family:var(--mono);
+    font-size:11px;font-weight:500;
+    color:var(--green);
+    margin:0;
+  }
+  .drop-zone.loaded:hover .drop-text{color:var(--accent)}
+  .drop-zone.loaded .drop-hint{
+    display:block;
+    font-size:10px;
+    color:var(--text-sec);
+    margin-top:3px;
+    opacity:0.7;
+    transition:opacity 0.2s, color 0.2s;
+  }
+  .drop-zone.loaded:hover .drop-hint{opacity:1;color:var(--accent)}
 
-  /* Section spacing */
-  .section { margin-bottom: 12px; }
-  .section:last-child { margin-bottom: 0; }
+  /* ── SHEET SELECT ── */
+  .sheet-select{margin-top:8px;display:none;animation:fadeIn 0.2s ease}
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 2px; }
-  ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
+  /* ── NATIVE SELECT (hidden, used for value storage) ── */
+  select.native-hidden{
+    position:absolute;width:0;height:0;opacity:0;pointer-events:none;overflow:hidden;
+  }
+
+  /* ── CUSTOM DROPDOWN ── */
+  .csel{position:relative;width:100%}
+  .csel-trigger{
+    width:100%;padding:8px 32px 8px 11px;
+    background:var(--card);color:var(--text);
+    border:1px solid var(--line);border-radius:var(--radius-sm);
+    font-family:var(--body);font-size:12px;
+    cursor:pointer;text-align:left;
+    transition:border-color 0.2s, background 0.2s;
+    position:relative;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .csel-trigger:hover{border-color:#403A50;background:var(--card-up)}
+  .csel.open .csel-trigger{border-color:var(--accent);background:var(--card-up)}
+
+  /* chevron */
+  .csel-trigger::after{
+    content:'';position:absolute;right:10px;top:50%;
+    width:0;height:0;
+    border-left:4px solid transparent;border-right:4px solid transparent;
+    border-top:4px solid var(--text-muted);
+    transform:translateY(-50%);
+    transition:transform 0.2s, border-color 0.2s;
+  }
+  .csel.open .csel-trigger::after{
+    transform:translateY(-50%) rotate(180deg);
+    border-top-color:var(--accent);
+  }
+
+  /* options panel */
+  .csel-panel{
+    position:absolute;left:0;right:0;top:calc(100% + 4px);
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:3px;
+    z-index:50;
+    max-height:160px;overflow-y:auto;
+    box-shadow:0 6px 20px rgba(0,0,0,0.45), 0 1px 4px rgba(0,0,0,0.3);
+    opacity:0;transform:translateY(-4px) scaleY(0.96);
+    transform-origin:top center;
+    transition:opacity 0.15s ease, transform 0.15s ease;
+    pointer-events:none;
+    display:block;
+  }
+  .csel.open .csel-panel{
+    opacity:1;transform:translateY(0) scaleY(1);
+    pointer-events:auto;
+  }
+
+  /* individual option */
+  .csel-opt{
+    padding:7px 10px;
+    font-family:var(--body);font-size:12px;
+    color:var(--text-sec);
+    border-radius:4px;
+    cursor:pointer;
+    transition:background 0.12s, color 0.12s;
+    display:flex;align-items:center;gap:8px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .csel-opt:hover{
+    background:var(--accent-dim);color:var(--text);
+  }
+  .csel-opt.selected{
+    color:var(--accent);font-weight:500;
+  }
+  .csel-opt.selected::before{
+    content:'';display:inline-block;
+    width:4px;height:4px;border-radius:50%;
+    background:var(--accent);flex-shrink:0;
+  }
+
+  /* ── LANGUAGE CHIPS ── */
+  .lang-chips{
+    display:flex;flex-wrap:wrap;gap:4px;
+    margin:14px 0 6px;
+  }
+  .lang-chip{
+    font-family:var(--mono);
+    font-size:9px;font-weight:500;
+    letter-spacing:0.06em;
+    padding:3px 7px;border-radius:3px;
+    background:var(--accent-dim);
+    color:var(--accent);
+    border:1px solid rgba(180,124,253,0.22);
+    animation:chipIn 0.25s ease both;
+  }
+
+  /* ── PREVIEW TABLE ── */
+  .preview{
+    max-height:260px;overflow:auto;
+    border:1px solid var(--line-sub);
+    border-radius:var(--radius-sm);
+    font-size:10px;
+    background:var(--bg2);
+    margin:8px 0;
+    animation:fadeIn 0.25s ease;
+  }
+  .preview table{width:100%;border-collapse:collapse}
+  .preview th{
+    background:var(--bg);
+    padding:5px 8px;text-align:left;
+    font-family:var(--mono);font-weight:500;
+    font-size:8px;text-transform:uppercase;letter-spacing:0.1em;
+    color:var(--text-muted);
+    position:sticky;top:0;
+    border-bottom:1px solid var(--line-sub);
+  }
+  .preview td{
+    padding:4px 8px;
+    border-top:1px solid var(--line-sub);
+    color:var(--text-sec);font-size:10px;
+  }
+  .preview-more-cell{
+    padding:0 !important;
+    border-top:1px solid var(--accent-line) !important;
+    background:var(--accent-dim);
+  }
+  .preview-more{
+    display:block;width:100%;
+    padding:7px 8px;
+    background:transparent;
+    border:none;
+    color:var(--accent);
+    font-family:var(--mono);font-size:10px;font-weight:600;
+    letter-spacing:0.04em;
+    cursor:pointer;text-align:center;
+    transition:background 0.2s;
+  }
+  .preview-more:hover{background:rgba(180,124,253,0.25)}
+  .preview-hint{
+    font-family:var(--mono);font-size:10px;
+    color:var(--text-sec);margin-top:4px;
+  }
+
+  /* ── EMAIL META ── */
+  .email-meta-card{
+    background:var(--amber-dim);
+    border:1px solid var(--amber-line);
+    border-radius:var(--radius-sm);
+    padding:10px 12px;margin-top:8px;
+    animation:fadeIn 0.25s ease;
+  }
+  .email-meta-card h4{
+    font-family:var(--mono);font-size:9px;font-weight:500;
+    text-transform:uppercase;letter-spacing:0.12em;
+    color:var(--amber);margin-bottom:5px;
+  }
+  .email-meta-lang{font-size:11px;margin-bottom:2px;line-height:1.4}
+  .email-meta-lang .lang-code{
+    font-family:var(--mono);font-weight:500;
+    color:var(--amber);display:inline-block;
+    width:22px;font-size:9px;
+  }
+  .email-meta-lang .text{color:var(--text-sec)}
+  .email-meta-expand{
+    font-family:var(--mono);font-size:9px;
+    color:var(--amber);cursor:pointer;font-weight:500;
+    margin-top:3px;display:inline-block;opacity:0.65;
+    transition:opacity 0.2s;
+  }
+  .email-meta-expand:hover{opacity:1}
+
+  /* ── SOURCE LANGUAGE ── */
+  .source-lang{margin:12px 0;animation:fadeIn 0.25s ease;display:none}
+  .source-display{
+    display:flex;align-items:center;gap:8px;
+    padding:8px 11px;
+    background:var(--card);border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    cursor:pointer;transition:border-color 0.2s;
+  }
+  .source-display:hover{border-color:#403A50}
+  .source-label{
+    font-family:var(--mono);font-size:9px;font-weight:500;
+    text-transform:uppercase;letter-spacing:0.12em;
+    color:var(--text-muted);
+  }
+  .source-value{font-size:12px;font-weight:500;color:var(--text);flex:1}
+  .source-edit{
+    font-size:10px;color:var(--text-muted);transition:color 0.2s;
+  }
+  .source-display:hover .source-edit{color:var(--accent)}
+  /* source lang custom panel — floats below the display bar */
+  .source-lang{position:relative}
+  .source-lang > .csel{position:absolute;left:0;right:0;top:100%;z-index:50;pointer-events:none}
+  .source-lang > .csel.open{pointer-events:auto}
+  .source-lang > .csel .csel-trigger{display:none}
+  .source-lang > .csel .csel-panel{position:relative;top:4px}
+
+  /* ── DIVIDER ── */
+  .divider{height:1px;background:var(--line-sub);margin:12px 0}
+
+  /* ── TOOLS ROW ── */
+  .tools-row{display:flex;gap:6px;margin:10px 0}
+  .btn-tool{
+    font-family:var(--body);font-size:10px;font-weight:500;
+    padding:5px 9px;
+    background:var(--card);color:var(--text-sec);
+    border:1px solid var(--line);border-radius:var(--radius-sm);
+    cursor:pointer;transition:all 0.2s;
+    display:flex;align-items:center;gap:4px;
+  }
+  .btn-tool:hover{
+    border-color:var(--accent-line);color:var(--text);
+    background:var(--card-up);
+  }
+  .btn-tool svg{flex-shrink:0;opacity:0.65}
+  .btn-tool:hover svg{opacity:1}
+
+  /* ── SCAN RESULTS ── */
+  .scan-list{
+    max-height:80px;overflow-y:auto;font-size:11px;
+    background:var(--bg2);border:1px solid var(--line-sub);
+    border-radius:var(--radius-sm);padding:7px 10px;
+    margin:6px 0;animation:fadeIn 0.2s ease;display:none;
+  }
+  .scan-item{padding:3px 0;border-bottom:1px solid var(--line-sub)}
+  .scan-item:last-child{border-bottom:none}
+  .scan-item .name{font-weight:600;color:var(--text);font-size:10px}
+  .scan-item .content{color:var(--text-muted);margin-left:4px;font-size:10px}
+
+  /* ── ADVANCED ── */
+  .advanced-section{margin:8px 0}
+  .advanced-toggle{
+    display:flex;align-items:center;gap:5px;
+    font-size:11px;font-weight:500;color:var(--text-muted);
+    cursor:pointer;padding:3px 0;
+    transition:color 0.2s;user-select:none;
+  }
+  .advanced-toggle:hover{color:var(--text-sec)}
+  .advanced-chevron{
+    font-size:8px;transition:transform 0.2s;display:inline-block;
+  }
+  .advanced-chevron.open{transform:rotate(90deg)}
+  .advanced-content{
+    padding:8px 0 0;display:none;animation:fadeIn 0.2s ease;
+  }
+
+  /* ── PRIMARY BUTTON ── */
+  .btn-primary{
+    display:block;width:100%;
+    padding:11px 20px;border:none;
+    border-radius:var(--radius);
+    font-family:var(--body);font-size:13px;font-weight:700;
+    cursor:pointer;
+    transition:all 0.2s ease;
+    margin-top:10px;
+    background:linear-gradient(135deg, #B47CFD, #FF7FC2);
+    color:#fff;
+    box-shadow:
+      0 1px 2px rgba(0,0,0,0.3),
+      inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+  .btn-primary:hover{
+    background:linear-gradient(135deg, #A366F0, #F06CB0);
+    transform:translateY(-0.5px);
+    box-shadow:
+      0 4px 14px rgba(180,124,253,0.30),
+      0 2px 6px rgba(255,127,194,0.15),
+      inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+  .btn-primary:active{
+    transform:translateY(0.5px);
+    box-shadow:0 1px 2px rgba(0,0,0,0.3);
+  }
+  .btn-primary:disabled{
+    background:var(--line);color:var(--text-muted);
+    cursor:not-allowed;transform:none;box-shadow:none;
+    background-image:none;
+  }
+  .btn-primary span{position:relative;z-index:1}
+
+  /* ── STATUS ── */
+  .status{
+    margin-top:10px;padding:8px 11px;
+    border-radius:var(--radius-sm);
+    font-size:11px;font-weight:500;
+    display:none;animation:slideUp 0.2s ease;
+  }
+  .status.info{display:block;background:var(--accent-dim);color:var(--accent)}
+  .status.success{display:block;background:var(--green-dim);color:var(--green)}
+  .status.error{display:block;background:var(--red-dim);color:var(--red)}
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes chipIn{from{opacity:0;transform:scale(0.88)}to{opacity:1;transform:scale(1)}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h2>Design Translator</h2>
-  <p>Upload CSV or Excel. Matches text by content, duplicates frame per language.</p>
+  <div class="header-title">Design <em>Translator</em></div>
+  <div class="header-ver">v1.0</div>
 </div>
 
-<!-- Mode Toggle -->
-<div class="mode-toggle">
-  <button class="mode-btn active" id="modeEmail" onclick="setMode('email')">Email</button>
-  <button class="mode-btn" id="modeCreative" onclick="setMode('creative')">Creative</button>
-</div>
+<div class="content">
 
-<div class="actions">
-  <button class="btn-ghost" onclick="scanLayers()">Scan Frame</button>
-  <button class="btn-ghost" onclick="createSample()">Create Sample</button>
-</div>
-
-<div id="scanResults" class="scan-list" style="display:none;"></div>
-
-<div class="card">
-  <label>Upload File</label>
-  <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-    Drop CSV or Excel here
+  <div class="drop-zone" id="dropZone">
+    <div class="drop-icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+    </div>
+    <div class="file-info">
+      <div class="drop-text">Drop CSV or Excel here</div>
+      <div class="drop-hint">or click to browse</div>
+    </div>
   </div>
-  <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.xlsx,.xls" style="display:none" />
-  <p class="hint">.csv or .xlsx with language codes as headers</p>
+  <input type="file" id="fileInput" accept=".csv,.tsv,.txt,.xlsx,.xls" style="display:none"/>
 
   <div class="sheet-select" id="sheetSelectArea">
-    <label style="margin-top:10px;">Sheet</label>
-    <select id="sheetSelect" onchange="loadSheet()"></select>
+    <div class="label">Sheet</div>
+    <select id="sheetSelect"></select>
   </div>
+
+  <div id="dataSummary" style="display:none">
+    <div class="lang-chips" id="langChips"></div>
+    <div id="previewArea"></div>
+    <div id="emailMeta"></div>
+  </div>
+
+  <div class="source-lang" id="sourceLangArea">
+    <div class="source-display" id="sourceLangDisplay">
+      <span class="source-label">Source</span>
+      <span class="source-value" id="sourceLangValue">EN &mdash; English</span>
+      <span class="source-edit">&#9998;</span>
+    </div>
+    <select id="sourceLang" class="native-hidden"></select>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="tools-row">
+    <button class="btn-tool" id="btnScan">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+      </svg>
+      Scan Frame
+    </button>
+    <button class="btn-tool" id="btnSample">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+      </svg>
+      Create Sample
+    </button>
+  </div>
+
+  <div class="scan-list" id="scanResults"></div>
+
+  <div class="advanced-section">
+    <div class="advanced-toggle" id="advancedToggle">
+      <span class="advanced-chevron" id="advancedChevron">&#9656;</span>
+      <span>Advanced</span>
+    </div>
+    <div class="advanced-content" id="advancedContent">
+      <div class="label">Text Resize</div>
+      <select id="autoResize">
+        <option value="height">Auto height</option>
+        <option value="both">Auto width &amp; height</option>
+        <option value="none">Keep original</option>
+        <option value="truncate">Truncate overflow</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="btn-primary" id="translateBtn" disabled>
+    <span>Upload file to start</span>
+  </button>
+
+  <div class="status" id="statusBar"></div>
 </div>
-
-<!-- Email meta: Subject Line & Preview Text -->
-<div class="email-meta" id="emailMeta"></div>
-
-<div id="previewArea"></div>
-
-<div class="card">
-  <div class="section">
-    <label>Source Language</label>
-    <select id="sourceLang">
-      <option value="">Upload file first</option>
-    </select>
-  </div>
-
-  <div class="section">
-    <label>Text Resize</label>
-    <select id="autoResize">
-      <option value="height">Auto height</option>
-      <option value="both">Auto width & height</option>
-      <option value="none">Keep original</option>
-      <option value="truncate">Truncate overflow</option>
-    </select>
-  </div>
-</div>
-
-<button class="btn-primary" id="translateBtn" disabled onclick="startTranslation()">
-  Upload file to start
-</button>
-
-<div class="status" id="statusBar"></div>
 
 <script>
+/* ── Custom Dropdown (upgrades native <select>) ── */
+class CustomSelect {
+  constructor(selectEl) {
+    this.select = selectEl;
+    this.select.classList.add('native-hidden');
+    this.wrap = document.createElement('div');
+    this.wrap.className = 'csel';
+    this.trigger = document.createElement('button');
+    this.trigger.type = 'button';
+    this.trigger.className = 'csel-trigger';
+    this.panel = document.createElement('div');
+    this.panel.className = 'csel-panel';
+    this.wrap.appendChild(this.trigger);
+    this.wrap.appendChild(this.panel);
+    this.select.parentNode.insertBefore(this.wrap, this.select);
+    this.wrap.appendChild(this.select);
+    this.externalTrigger = null; // optional external element that also toggles this
+    this.trigger.addEventListener('click', (e) => { e.stopPropagation(); this.toggle(); });
+    document.addEventListener('click', (e) => {
+      if (this.wrap.contains(e.target)) return;
+      if (this.externalTrigger && this.externalTrigger.contains(e.target)) return;
+      this.close();
+    });
+    this.refresh();
+  }
+  refresh() {
+    const opts = Array.from(this.select.options);
+    this.panel.innerHTML = '';
+    opts.forEach((opt, i) => {
+      const div = document.createElement('div');
+      div.className = 'csel-opt' + (this.select.selectedIndex === i ? ' selected' : '');
+      div.textContent = opt.textContent;
+      div.dataset.value = opt.value;
+      div.addEventListener('click', (e) => { e.stopPropagation(); this.pick(opt.value); });
+      this.panel.appendChild(div);
+    });
+    const sel = this.select.options[this.select.selectedIndex];
+    this.trigger.textContent = sel ? sel.textContent : '';
+  }
+  pick(val) {
+    this.select.value = val;
+    this.select.dispatchEvent(new Event('change', { bubbles: true }));
+    this.close();
+    this.refresh();
+  }
+  toggle() { this.wrap.classList.toggle('open'); }
+  close() { this.wrap.classList.remove('open'); }
+  get value() { return this.select.value; }
+  set value(v) { this.select.value = v; this.refresh(); }
+}
+
+// Upgrade all selects after DOM is ready
+const customSelects = {};
+document.querySelectorAll('select:not(.native-hidden)').forEach(sel => {
+  customSelects[sel.id] = new CustomSelect(sel);
+});
+// Source lang is already native-hidden in HTML — upgrade it manually
+(function() {
+  const sl = document.getElementById('sourceLang');
+  if (sl) {
+    const cs = new CustomSelect(sl);
+    cs.externalTrigger = document.getElementById('sourceLangDisplay');
+    customSelects.sourceLang = cs;
+  }
+})();
+
 const LANG_NAMES = {
   en: 'English', bg: 'Bulgarian', el: 'Greek', ro: 'Romanian',
   hu: 'Hungarian', hr: 'Croatian', cs: 'Czech', sk: 'Slovak',
@@ -422,16 +654,8 @@ const LANG_NAMES = {
 
 let csvData = null;
 let workbook = null;
-let currentMode = 'email';
 let emailMetaRows = [];
 let bodyRows = [];
-
-function setMode(mode) {
-  currentMode = mode;
-  document.getElementById('modeEmail').classList.toggle('active', mode === 'email');
-  document.getElementById('modeCreative').classList.toggle('active', mode === 'creative');
-  if (csvData) processData();
-}
 
 function detectDelimiter(firstLine) {
   const tab = firstLine.split('\t').length;
@@ -519,8 +743,8 @@ function parseExcelSheet(wb, sheetName) {
   }
 
   const hasLabelCol = startCol === 1;
-
   const rows = [];
+
   for (let r = headerIdx + 1; r < data.length; r++) {
     const srcRow = data[r];
     if (!srcRow || srcRow.length === 0) continue;
@@ -587,48 +811,103 @@ function processData() {
   emailMetaRows = [];
   bodyRows = [];
 
-  if (currentMode === 'email') {
-    // Only separate rows as meta if they have explicit labels (Subject, Preview)
-    // Never use position-based guessing — it causes false positives
-    const emailLabelPatterns = ['subject', 'preview'];
-
-    for (let i = 0; i < csvData.rows.length; i++) {
-      const row = csvData.rows[i];
-      const label = (row.label || '').toLowerCase();
-      const isMetaByLabel = emailLabelPatterns.some(p => label.includes(p));
-
-      if (isMetaByLabel && emailMetaRows.length < 2) {
-        emailMetaRows.push(row);
-      } else {
-        bodyRows.push(row);
-      }
+  const emailLabelPatterns = ['subject', 'preview'];
+  for (let i = 0; i < csvData.rows.length; i++) {
+    const row = csvData.rows[i];
+    const label = (row.label || '').toLowerCase();
+    const isMetaByLabel = emailLabelPatterns.some(p => label.includes(p));
+    if (isMetaByLabel && emailMetaRows.length < 2) {
+      emailMetaRows.push(row);
+    } else {
+      bodyRows.push(row);
     }
-  } else {
-    bodyRows = [...csvData.rows];
   }
 
-  showEmailMeta();
+  document.getElementById('dataSummary').style.display = 'block';
+  showLangChips();
   showPreview();
+  showEmailMeta();
   updateSourceLang();
-  document.getElementById('translateBtn').disabled = false;
-  document.getElementById('translateBtn').textContent = 'Generate Translations';
+  document.getElementById('sourceLangArea').style.display = 'block';
+
+  const btn = document.getElementById('translateBtn');
+  btn.disabled = false;
+  btn.innerHTML = '<span>Generate Translations</span>';
+
+  // Content changed — resize the window to fit
+  setTimeout(requestResize, 60);
+}
+
+function showLangChips() {
+  const container = document.getElementById('langChips');
+  let html = '';
+  csvData.allLangs.forEach((l, i) => {
+    html += '<span class="lang-chip" style="animation-delay:' + (i * 0.04) + 's">' + l.toUpperCase() + '</span>';
+  });
+  container.innerHTML = html;
+}
+
+function showPreview() {
+  if (!csvData) return;
+  const area = document.getElementById('previewArea');
+  const displayRows = bodyRows;
+  let html = '';
+
+  if (emailMetaRows.length > 0) {
+    html += '<div class="preview-hint">' + emailMetaRows.length + ' meta row(s) detected &middot; ' + displayRows.length + ' text rows</div>';
+  }
+
+  html += '<div class="preview"><table><tr>';
+  csvData.allLangs.forEach(l => { html += '<th>' + l.toUpperCase() + '</th>'; });
+  html += '</tr>';
+
+  const showAll = area.dataset.expanded === 'true';
+  const max = showAll ? displayRows.length : Math.min(displayRows.length, 5);
+  for (let i = 0; i < max; i++) {
+    const row = displayRows[i];
+    html += '<tr>';
+    csvData.allLangs.forEach(l => {
+      const t = row.translations[l] || '';
+      html += '<td>' + (t.substring(0, 30) + (t.length > 30 ? '...' : '')) + '</td>';
+    });
+    html += '</tr>';
+  }
+  if (displayRows.length > 5) {
+    html += '<tr><td colspan="' + csvData.allLangs.length + '" class="preview-more-cell">';
+    if (showAll) {
+      html += '<span class="preview-more" onclick="togglePreviewRows()">Show less \u25B2</span>';
+    } else {
+      html += '<span class="preview-more" onclick="togglePreviewRows()">Show +' + (displayRows.length - 5) + ' more rows \u25BC</span>';
+    }
+    html += '</td></tr>';
+  }
+  html += '</table></div>';
+  area.innerHTML = html;
+}
+
+function togglePreviewRows() {
+  const area = document.getElementById('previewArea');
+  area.dataset.expanded = area.dataset.expanded === 'true' ? 'false' : 'true';
+  showPreview();
+  setTimeout(requestResize, 60);
 }
 
 function showEmailMeta() {
   const metaDiv = document.getElementById('emailMeta');
-  if (currentMode !== 'email' || emailMetaRows.length === 0) {
+  if (emailMetaRows.length === 0) {
     metaDiv.style.display = 'none';
+    metaDiv.innerHTML = '';
     return;
   }
 
   metaDiv.style.display = 'block';
   let html = '';
-
   const metaLabels = ['Subject Line', 'Preview Text'];
+
   emailMetaRows.forEach((row, idx) => {
-    const title = row.label || metaLabels[idx] || `Meta ${idx + 1}`;
-    html += `<div class="email-meta-card">`;
-    html += `<h4>${title}</h4>`;
+    const title = row.label || metaLabels[idx] || ('Meta ' + (idx + 1));
+    html += '<div class="email-meta-card">';
+    html += '<h4>' + title + '</h4>';
 
     const langs = csvData.allLangs;
     const showCount = 4;
@@ -636,37 +915,65 @@ function showEmailMeta() {
       const text = row.translations[lang] || '';
       if (!text) return;
       const hidden = li >= showCount ? ' style="display:none"' : '';
-      html += `<div class="email-meta-lang meta-${idx}-lang"${hidden}>`;
-      html += `<span class="lang-code">${lang.toUpperCase()}</span>`;
-      html += `<span class="text">${text.substring(0, 80)}${text.length > 80 ? '...' : ''}</span>`;
-      html += `</div>`;
+      html += '<div class="email-meta-lang meta-' + idx + '-lang"' + hidden + '>';
+      html += '<span class="lang-code">' + lang.toUpperCase() + '</span>';
+      html += '<span class="text">' + text.substring(0, 80) + (text.length > 80 ? '...' : '') + '</span>';
+      html += '</div>';
     });
 
     if (langs.length > showCount) {
-      html += `<span class="email-meta-expand" onclick="toggleMetaLangs(${idx})">Show all ${langs.length} languages</span>`;
+      html += '<span class="email-meta-expand" onclick="toggleMetaLangs(' + idx + ')">Show all ' + langs.length + ' languages</span>';
     }
-    html += `</div>`;
+    html += '</div>';
   });
 
   metaDiv.innerHTML = html;
 }
 
 function toggleMetaLangs(idx) {
-  const items = document.querySelectorAll(`.meta-${idx}-lang`);
+  const items = document.querySelectorAll('.meta-' + idx + '-lang');
   let anyHidden = false;
   items.forEach(el => { if (el.style.display === 'none') anyHidden = true; });
-  items.forEach(el => el.style.display = anyHidden ? '' : 'none');
+  items.forEach(el => { el.style.display = anyHidden ? '' : 'none'; });
   if (!anyHidden) {
     let count = 0;
     items.forEach(el => { if (count < 4) el.style.display = ''; count++; });
   }
 }
 
+function updateSourceLang() {
+  const sel = document.getElementById('sourceLang');
+  sel.innerHTML = '';
+  csvData.allLangs.forEach(l => {
+    const name = LANG_NAMES[l] || l;
+    sel.innerHTML += '<option value="' + l + '">' + l.toUpperCase() + ' \u2014 ' + name + '</option>';
+  });
+  if (csvData.allLangs.includes('en')) sel.value = 'en';
+  else if (csvData.allLangs.includes('bg')) sel.value = 'bg';
+  if (customSelects.sourceLang) customSelects.sourceLang.refresh();
+  updateSourceDisplay();
+}
+
+function updateSourceDisplay() {
+  const sel = document.getElementById('sourceLang');
+  const val = sel.value;
+  const name = LANG_NAMES[val] || val;
+  document.getElementById('sourceLangValue').textContent = val.toUpperCase() + ' \u2014 ' + name;
+}
+
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
 
+function setDropLoaded(fileName, detail) {
+  dropZone.classList.add('loaded');
+  dropZone.querySelector('.drop-icon').innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  dropZone.querySelector('.drop-text').textContent = fileName;
+  dropZone.querySelector('.drop-hint').textContent = detail;
+}
+
+dropZone.addEventListener('click', () => { fileInput.click(); });
 dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('dragover'); });
 dropZone.addEventListener('drop', (e) => {
   e.preventDefault();
   dropZone.classList.remove('dragover');
@@ -687,11 +994,11 @@ function handleFile(file) {
         sheetSel.innerHTML = '';
         const validSheets = workbook.SheetNames.filter(n => n.toUpperCase() !== 'SCHEDULE');
         validSheets.forEach(name => {
-          sheetSel.innerHTML += `<option value="${name}">${name}</option>`;
+          sheetSel.innerHTML += '<option value="' + name + '">' + name + '</option>';
         });
-        sheetArea.style.display = 'block';
-        dropZone.classList.add('loaded');
-        dropZone.textContent = `${file.name} — ${validSheets.length} sheets`;
+        sheetArea.style.display = validSheets.length > 1 ? 'block' : 'none';
+        if (customSelects.sheetSelect) customSelects.sheetSelect.refresh();
+        setDropLoaded(file.name, validSheets.length + ' sheet' + (validSheets.length !== 1 ? 's' : '') + ' \u00B7 click to change');
         loadSheet();
       } catch (err) {
         setStatus('error', 'Could not read Excel file: ' + err.message);
@@ -708,8 +1015,7 @@ function handleFile(file) {
       }
       document.getElementById('sheetSelectArea').style.display = 'none';
       workbook = null;
-      dropZone.classList.add('loaded');
-      dropZone.textContent = `${file.name} — ${csvData.allLangs.length} langs, ${csvData.rows.length} rows`;
+      setDropLoaded(file.name, csvData.allLangs.length + ' langs, ' + csvData.rows.length + ' rows \u00B7 click to change');
       processData();
     };
     reader.readAsText(file);
@@ -722,74 +1028,54 @@ function loadSheet() {
 
   csvData = parseExcelSheet(workbook, sheetName);
   if (!csvData || csvData.rows.length === 0) {
-    setStatus('error', `Sheet "${sheetName}" has no translatable data.`);
+    setStatus('error', 'Sheet "' + sheetName + '" has no translatable data.');
     document.getElementById('translateBtn').disabled = true;
     return;
   }
 
-  setStatus('info', `"${sheetName}" — ${csvData.allLangs.length} languages, ${csvData.rows.length} rows`);
+  setStatus('info', '"' + sheetName + '" \u2014 ' + csvData.allLangs.length + ' languages, ' + csvData.rows.length + ' rows');
   processData();
 }
 
-function showPreview() {
-  if (!csvData) return;
-  const area = document.getElementById('previewArea');
-  const displayRows = (currentMode === 'email') ? bodyRows : csvData.rows;
-  let html = '<div class="lang-grid">';
-  csvData.allLangs.forEach(l => {
-    const name = LANG_NAMES[l] || l;
-    html += `<span class="lang-tag">${l.toUpperCase()}</span>`;
-  });
-  html += '</div>';
+document.getElementById('sourceLangDisplay').addEventListener('click', () => {
+  if (customSelects.sourceLang) customSelects.sourceLang.toggle();
+});
 
-  if (currentMode === 'email' && emailMetaRows.length > 0) {
-    html += `<p class="hint" style="margin-top:5px;">${emailMetaRows.length} meta row(s) separated, ${displayRows.length} text rows for frame</p>`;
-  }
+document.getElementById('sourceLang').addEventListener('change', () => {
+  updateSourceDisplay();
+  if (customSelects.sourceLang) customSelects.sourceLang.close();
+});
 
-  html += '<div class="preview"><table><tr>';
-  csvData.allLangs.forEach(l => html += `<th>${l.toUpperCase()}</th>`);
-  html += '</tr>';
-  const max = Math.min(displayRows.length, 5);
-  for (let i = 0; i < max; i++) {
-    const row = displayRows[i];
-    html += '<tr>';
-    csvData.allLangs.forEach(l => {
-      const t = row.translations[l] || '';
-      html += `<td>${t.substring(0, 30)}${t.length > 30 ? '...' : ''}</td>`;
-    });
-    html += '</tr>';
-  }
-  if (displayRows.length > max) {
-    html += `<tr><td colspan="${csvData.allLangs.length}" style="text-align:center;color:var(--text-tertiary);">+${displayRows.length - max} more</td></tr>`;
-  }
-  html += '</table></div>';
-  area.innerHTML = html;
-}
+document.getElementById('advancedToggle').addEventListener('click', () => {
+  const content = document.getElementById('advancedContent');
+  const chevron = document.getElementById('advancedChevron');
+  const isHidden = content.style.display === 'none' || !content.style.display;
+  content.style.display = isHidden ? 'block' : 'none';
+  chevron.classList.toggle('open', isHidden);
+  setTimeout(requestResize, 60);
+});
 
-function updateSourceLang() {
-  const sel = document.getElementById('sourceLang');
-  sel.innerHTML = '';
-  csvData.allLangs.forEach(l => {
-    const name = LANG_NAMES[l] || l;
-    sel.innerHTML += `<option value="${l}">${l.toUpperCase()} — ${name}</option>`;
-  });
-  if (csvData.allLangs.includes('en')) sel.value = 'en';
-  else if (csvData.allLangs.includes('bg')) sel.value = 'bg';
-}
+document.getElementById('btnScan').addEventListener('click', () => {
+  parent.postMessage({ pluginMessage: { type: 'scan' } }, '*');
+});
 
-function startTranslation() {
+document.getElementById('btnSample').addEventListener('click', () => {
+  parent.postMessage({ pluginMessage: { type: 'create-sample' } }, '*');
+});
+
+document.getElementById('sheetSelect').addEventListener('change', loadSheet);
+
+document.getElementById('translateBtn').addEventListener('click', () => {
   if (!csvData) return;
   const btn = document.getElementById('translateBtn');
   btn.disabled = true;
-  btn.textContent = 'Translating...';
+  btn.innerHTML = '<span>Generating...</span>';
   setStatus('info', 'Starting...');
 
   const sourceLang = document.getElementById('sourceLang').value;
   const targetLangs = csvData.allLangs.filter(l => l !== sourceLang);
 
-  const rowsToSend = (currentMode === 'email') ? bodyRows : csvData.rows;
-
-  const rows = rowsToSend.map(r => ({
+  const rows = bodyRows.map(r => ({
     sourceText: r.translations[sourceLang] || r.sourceText,
     translations: r.translations,
   }));
@@ -799,21 +1085,13 @@ function startTranslation() {
       type: 'translate',
       data: { sourceLang, targetLangs, rows },
       autoResize: document.getElementById('autoResize').value,
-      emailMeta: (currentMode === 'email') ? emailMetaRows.map(r => ({
+      emailMeta: emailMetaRows.length > 0 ? emailMetaRows.map(r => ({
         label: r.label || '',
         translations: r.translations,
       })) : null,
     }
   }, '*');
-}
-
-function scanLayers() {
-  parent.postMessage({ pluginMessage: { type: 'scan' } }, '*');
-}
-
-function createSample() {
-  parent.postMessage({ pluginMessage: { type: 'create-sample' } }, '*');
-}
+});
 
 function setStatus(type, message) {
   const bar = document.getElementById('statusBar');
@@ -821,32 +1099,53 @@ function setStatus(type, message) {
   bar.textContent = message;
 }
 
+// Auto-resize plugin window to fit content
+function requestResize() {
+  // Measure the bottom of the last visible child to get true content height
+  const header = document.querySelector('.header');
+  const content = document.querySelector('.content');
+  const headerH = header ? header.getBoundingClientRect().height : 0;
+  const contentH = content ? content.scrollHeight : 0;
+  const h = Math.ceil(headerH + contentH + 1);
+  parent.postMessage({ pluginMessage: { type: 'resize', height: h } }, '*');
+}
+// Observe the content div (not body, which stretches to fill the iframe)
+const _resizeObserver = new ResizeObserver(() => requestResize());
+_resizeObserver.observe(document.querySelector('.content'));
+// Also fire after DOM settles on load
+setTimeout(requestResize, 50);
+
 onmessage = (event) => {
   const msg = event.data.pluginMessage;
   if (!msg) return;
+
   if (msg.type === 'status') setStatus('info', msg.message);
+
   if (msg.type === 'error') {
     setStatus('error', msg.message);
     const btn = document.getElementById('translateBtn');
     btn.disabled = false;
-    btn.textContent = 'Generate Translations';
+    btn.innerHTML = '<span>Generate Translations</span>';
   }
+
   if (msg.type === 'done') {
     setStatus('success', msg.message);
     const btn = document.getElementById('translateBtn');
     btn.disabled = false;
-    btn.textContent = 'Done! Run again?';
+    btn.innerHTML = '<span>Done! Run again?</span>';
   }
+
   if (msg.type === 'scan-result') {
     const div = document.getElementById('scanResults');
     div.style.display = 'block';
     if (!msg.layers || msg.layers.length === 0) {
-      div.innerHTML = '<i>No text layers found. Select a frame first.</i>';
+      div.innerHTML = '<span style="color:var(--text-muted);font-style:italic;">No text layers found. Select a frame first.</span>';
       return;
     }
     div.innerHTML = msg.layers.map(l =>
-      `<div class="scan-item"><span class="name">${l.name}</span> <span class="content">"${l.content}"</span></div>`
+      '<div class="scan-item"><span class="name">' + l.name + '</span> <span class="content">"' + l.content + '"</span></div>'
     ).join('');
+    setTimeout(requestResize, 60);
   }
 };
 </script>

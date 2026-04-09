@@ -9,6 +9,10 @@
   "editorType": ["figma"],
   "documentAccess": "dynamic-page",
   "networkAccess": {
-    "allowedDomains": ["https://cdn.sheetjs.com"]
+    "allowedDomains": [
+      "https://cdn.sheetjs.com",
+      "https://fonts.googleapis.com",
+      "https://fonts.gstatic.com"
+    ]
   }
 }

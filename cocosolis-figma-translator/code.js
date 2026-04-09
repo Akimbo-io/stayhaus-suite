@@ -27,7 +27,7 @@
   // code.ts
   var require_code = __commonJS({
     "code.ts"(exports) {
-      figma.showUI(__html__, { width: 520, height: 680 });
+      figma.showUI(__html__, { width: 400, height: 340, themeColors: false });
       function findTextNodes(node) {
         const texts = [];
         if (node.type === "TEXT") {
@@ -368,6 +368,10 @@
             type: "done",
             message: "Sample email created! Select it, upload CSV, and translate."
           });
+        }
+        if (msg.type === "resize") {
+          const h = Math.max(200, Math.min(msg.height || 340, 800));
+          figma.ui.resize(400, h);
         }
         if (msg.type === "cancel") {
           figma.closePlugin();

@@ -1,7 +1,7 @@
 // Figma Design Translator Plugin
 // Matches text by CONTENT (not layer names), duplicates frame per language
 
-figma.showUI(__html__, { width: 520, height: 680 });
+figma.showUI(__html__, { width: 400, height: 340, themeColors: false });
 
 interface TranslationRow {
   sourceText: string;
@@ -408,6 +408,12 @@ figma.ui.onmessage = async (msg: any) => {
       type: "done",
       message: "Sample email created! Select it, upload CSV, and translate.",
     });
+  }
+
+  // ── RESIZE ──
+  if (msg.type === "resize") {
+    const h = Math.max(200, Math.min(msg.height || 340, 800));
+    figma.ui.resize(400, h);
   }
 
   if (msg.type === "cancel") {
