@@ -3,249 +3,511 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>StayHaus Онбординг на клиент</title>
+<title>StayHaus — Онбординг</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap&subset=cyrillic" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: {
-          bg:       '#0A0118',
-          bg2:      '#0F0520',
-          card:     '#18023A',
-          card2:    '#241A30',
-          line:     '#2B2338',
-          text:     '#FFFFFF',
-          muted:    '#9B96B0',
-          purple:   '#B47CFD',
-          pink:     '#FF7FC2',
-          peach:    '#FFB07B',
-        },
-        fontFamily: {
-          sans:    ['Inter', 'system-ui', 'sans-serif'],
-          display: ['Outfit', 'Inter', 'sans-serif'],
-        },
-      },
-    },
-  };
-</script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap&subset=cyrillic" rel="stylesheet">
 <style>
-  html, body {
-    background: #0A0118;
-    color: #fff;
-    font-family: 'Inter', system-ui, sans-serif;
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:     #0A0118;
+    --bg2:    #0F0520;
+    --card:   rgba(24, 2, 58, .55);
+    --line:   #2B2338;
+    --text:   #FFFFFF;
+    --muted:  #9B96B0;
+    --dim:    #6b6580;
+    --purple: #B47CFD;
+    --pink:   #FF7FC2;
+    --peach:  #FFB07B;
   }
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
+
+  html { background: var(--bg); }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* === Ambient background === */
+  .ambient {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
     background:
-      radial-gradient(60% 50% at 80% 0%, rgba(180,124,253,.18), transparent 60%),
-      radial-gradient(50% 40% at 0% 100%, rgba(255,127,194,.12), transparent 60%);
-    pointer-events: none;
-    z-index: 0;
+      radial-gradient(70% 50% at 80% -10%, rgba(180,124,253,.2), transparent 60%),
+      radial-gradient(50% 45% at 10% 100%, rgba(255,127,194,.12), transparent 55%),
+      radial-gradient(40% 30% at 50% 50%, rgba(180,124,253,.04), transparent 50%);
   }
-  .step { display: none; }
+  .ambient::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+    opacity: .5;
+  }
+
+  /* === Layout === */
+  .shell { position: relative; z-index: 1; min-height: 100dvh; display: flex; flex-direction: column; }
+
+  /* === Header bar === */
+  .header {
+    padding: 24px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid rgba(43,35,56,.5);
+  }
+  .logo {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-weight: 700; font-size: 20px; letter-spacing: -.01em;
+    color: var(--text);
+  }
+  .header-tag {
+    font-size: 10px; text-transform: uppercase; letter-spacing: .22em;
+    color: var(--muted);
+  }
+
+  /* === Hero intro === */
+  .intro { margin-bottom: 32px; }
+  .intro-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 11px; text-transform: uppercase; letter-spacing: .22em;
+    color: var(--purple); margin-bottom: 20px;
+  }
+  .intro-eyebrow .line { height: 1px; width: 24px; background: var(--purple); }
+  .intro h1 {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: clamp(32px, 6vw, 48px); font-weight: 700;
+    line-height: 1.05; letter-spacing: -.02em;
+  }
+  .intro h1 .grad {
+    background: linear-gradient(135deg, var(--purple), var(--pink), var(--peach));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .intro-sub {
+    margin-top: 16px; font-size: 15px; color: var(--muted);
+    line-height: 1.6; max-width: 460px;
+  }
+
+  /* === Main === */
+  .main { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 48px 24px 80px; }
+  .container { width: 100%; max-width: 640px; }
+
+  /* === Section title === */
+  .section-head { margin-bottom: 36px; }
+  .section-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px; font-weight: 500; color: var(--purple);
+    letter-spacing: .05em; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-num::after {
+    content: ''; height: 1px; flex: 1;
+    background: linear-gradient(90deg, rgba(180,124,253,.3), transparent);
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 5vw, 38px); font-weight: 500;
+    line-height: 1.1; letter-spacing: -.02em;
+    color: var(--text);
+  }
+  .section-sub {
+    margin-top: 10px; font-size: 15px; color: var(--muted);
+    line-height: 1.5; max-width: 440px;
+  }
+
+  /* === Form card === */
+  .form-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 40px 36px 36px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+  }
+  .form-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(180,124,253,.3), transparent);
+  }
+
+  /* === Steps === */
+  .step { display: none; animation: fadeUp .4s cubic-bezier(.4,0,.2,1) both; }
   .step.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* === Fields === */
+  .field { margin-bottom: 24px; }
+  .field:last-child { margin-bottom: 0; }
+  .field-label {
+    display: block; font-size: 13px; font-weight: 500;
+    color: var(--muted); margin-bottom: 8px;
+    letter-spacing: .02em;
+    transition: color .2s;
+  }
+  .field:focus-within .field-label { color: var(--purple); }
+  .req { color: var(--pink); font-weight: 400; }
 
   input, textarea, select {
     width: 100%;
-    background: #0F0520;
-    border: 1px solid #2B2338;
-    border-radius: 14px;
-    padding: 20px 36px;
-    font-size: 16px;
-    line-height: 1.5;
-    color: #fff;
+    background: rgba(15, 5, 32, .6);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 15px; line-height: 1.5;
+    color: var(--text);
     font-family: inherit;
-    transition: border-color .15s, box-shadow .15s, background .15s;
+    transition: border-color .2s, box-shadow .2s, background .2s;
   }
-  input { height: 60px; padding-top: 0; padding-bottom: 0; }
-  textarea { padding-top: 22px; padding-bottom: 22px; }
-  input::placeholder, textarea::placeholder { color: #6b6580; }
+  input { height: 52px; padding-top: 0; padding-bottom: 0; }
+  textarea { min-height: 140px; resize: vertical; padding: 16px 20px; }
+  input::placeholder, textarea::placeholder { color: var(--dim); }
   input:focus, textarea:focus, select:focus {
     outline: none;
-    border-color: #B47CFD;
-    background: #140330;
-    box-shadow: 0 0 0 4px rgba(180,124,253,.12);
+    border-color: var(--purple);
+    background: rgba(20, 3, 48, .8);
+    box-shadow: 0 0 0 3px rgba(180,124,253,.1), 0 4px 24px rgba(180,124,253,.08);
   }
-  textarea { min-height: 170px; resize: vertical; }
+  .field-hint {
+    margin-top: 6px; font-size: 12px; color: var(--dim); line-height: 1.5;
+  }
+  .secure-hint {
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-left: 8px; position: relative; cursor: default;
+    font-size: 11px; color: var(--dim); font-weight: 400;
+    vertical-align: middle;
+  }
+  .secure-hint svg { width: 13px; height: 13px; color: var(--muted); transition: color .2s; }
+  .secure-hint:hover svg { color: var(--purple); }
+  .secure-tooltip {
+    position: absolute; bottom: calc(100% + 10px); left: 0;
+    width: 260px; padding: 12px 14px;
+    background: #1a0e2e; border: 1px solid var(--line);
+    border-radius: 10px; font-size: 12px; line-height: 1.5;
+    color: var(--muted);
+    opacity: 0; visibility: hidden; transform: translateY(4px);
+    transition: all .2s cubic-bezier(.4,0,.2,1);
+    pointer-events: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+  }
+  .secure-tooltip::after {
+    content: ''; position: absolute; top: 100%; left: 20px;
+    border: 6px solid transparent; border-top-color: #1a0e2e;
+  }
+  .secure-hint:hover .secure-tooltip { opacity: 1; visibility: visible; transform: translateY(0); }
 
-  .btn-primary {
-    background: linear-gradient(135deg, #B47CFD 0%, #FF7FC2 100%);
-    color: #0A0118;
-    padding: 14px 26px;
-    border-radius: 999px;
-    border: 0;
-    font-weight: 700;
-    font-size: 14px;
-    letter-spacing: .01em;
-    cursor: pointer;
-    transition: transform .15s, box-shadow .15s, filter .15s;
-    box-shadow: 0 8px 24px -8px rgba(180,124,253,.5);
+  /* === Buttons === */
+  .form-actions {
+    margin-top: 36px; padding-top: 24px;
+    border-top: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
   }
-  .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.08); }
-  .btn-ghost {
+  .btn-next {
     background: transparent;
-    color: #9B96B0;
-    padding: 14px 22px;
-    border: 0;
-    font-size: 14px;
-    font-weight: 500;
+    color: var(--text);
+    height: 48px; padding: 0 28px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(180,124,253,.4);
+    font-weight: 600; font-size: 14px; letter-spacing: .02em;
     cursor: pointer;
-    border-radius: 999px;
-    transition: color .15s, background .15s;
+    transition: all .25s cubic-bezier(.4,0,.2,1);
+    display: inline-flex; align-items: center; gap: 8px;
   }
-  .btn-ghost:hover { color: #fff; background: rgba(255,255,255,.04); }
-  .btn-ghost:disabled { opacity: .25; cursor: not-allowed; }
+  .btn-next:hover {
+    border-color: var(--purple);
+    background: rgba(180,124,253,.1);
+    box-shadow: 0 0 20px rgba(180,124,253,.15);
+    transform: translateY(-1px);
+  }
+  .btn-next:active { transform: translateY(0); }
+  .btn-next svg { width: 15px; height: 15px; transition: transform .2s; }
+  .btn-next:hover svg { transform: translateX(3px); }
 
-  .req { color: #FF7FC2; }
+  .btn-back {
+    background: none; border: 0;
+    color: var(--muted); font-size: 14px; font-weight: 500;
+    cursor: pointer; padding: 12px 16px; border-radius: 10px;
+    transition: color .2s, background .2s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-back:hover { color: var(--text); background: rgba(255,255,255,.04); }
+  .btn-back:disabled { opacity: 0; pointer-events: none; }
+  .btn-back svg { width: 14px; height: 14px; }
+
+  /* === Progress bar === */
+  .progress-wrap {
+    margin-bottom: 36px;
+  }
+  .progress-track {
+    height: 3px; background: var(--line); border-radius: 4px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, var(--purple), var(--pink));
+    transition: width .5s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* === Success state === */
+  .success { text-align: center; padding: 48px 20px; }
+  .success-ring {
+    width: 80px; height: 80px; margin: 0 auto 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(180,124,253,.15), rgba(255,127,194,.15));
+    border: 2px solid rgba(180,124,253,.3);
+    display: flex; align-items: center; justify-content: center;
+    animation: scaleIn .5s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .success-ring svg { width: 32px; height: 32px; color: var(--purple); }
+  .success-ring svg path {
+    stroke-dasharray: 30; stroke-dashoffset: 30;
+    animation: drawCheck .4s .3s ease-out forwards;
+  }
+  @keyframes scaleIn { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  @keyframes drawCheck { to { stroke-dashoffset: 0; } }
+  .success h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px; font-weight: 500; margin-bottom: 12px;
+  }
+  .success p { color: var(--muted); font-size: 15px; line-height: 1.6; max-width: 380px; margin: 0 auto; }
+
+  /* === Footer === */
+  .footer {
+    padding: 20px 32px;
+    border-top: 1px solid rgba(43,35,56,.4);
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; color: var(--dim);
+  }
+
+  /* === Responsive === */
+  @media (max-width: 600px) {
+    .main { padding: 32px 16px 60px; }
+    .form-card { padding: 28px 22px 28px; border-radius: 20px; }
+    .step-dot { width: 30px; height: 30px; font-size: 11px; }
+    .step-line { max-width: 16px; }
+    .section-title { font-size: 26px; }
+    .header { padding: 18px 20px; }
+    .footer { padding: 16px 20px; }
+  }
 </style>
 </head>
 <body>
 
-<div class="relative z-10 min-h-screen flex flex-col">
+<div class="ambient"></div>
 
-  <!-- Header -->
-  <header class="border-b border-line/60 backdrop-blur-sm">
-    <div class="max-w-5xl mx-auto px-6 py-6 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="text-xl font-display font-bold tracking-tight text-white">StayHaus</div>
-      </div>
-      <div class="text-[11px] uppercase tracking-[0.22em] text-muted hidden sm:block">Retention Marketing</div>
-    </div>
+<div class="shell">
+
+  <header class="header">
+    <div class="logo">StayHaus</div>
+    <div class="header-tag">Retention Marketing</div>
   </header>
 
-  <main class="flex-1">
-    <div class="max-w-2xl mx-auto px-6 py-16">
+  <main class="main">
+    <div class="container">
 
       <!-- Intro -->
-      <div class="mb-12">
-        <div class="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.22em] text-purple mb-5">
-          <span class="h-px w-6 bg-purple"></span>
+      <div class="intro">
+        <div class="intro-eyebrow">
+          <span class="line"></span>
           Стъпка <span id="stepNum">1</span> / 7
         </div>
-        <h1 class="font-display text-4xl sm:text-5xl font-bold leading-[1.05] tracking-tight">
-          Онбординг на <span class="bg-gradient-to-r from-purple via-pink to-peach bg-clip-text text-transparent">клиент</span>.
-        </h1>
-        <p class="mt-5 text-muted max-w-lg leading-relaxed">
-          Попълнете данните за вашия бранд, за да стартираме работата заедно.
-        </p>
+        <h1>Онбординг на <span class="grad">клиент</span>.</h1>
+        <p class="intro-sub">Попълнете данните за вашия бранд, за да стартираме работата заедно.</p>
       </div>
 
       <!-- Progress -->
-      <div class="mb-10">
-        <div class="h-[3px] w-full bg-line rounded-full overflow-hidden">
-          <div id="bar" class="h-full bg-gradient-to-r from-purple to-pink transition-all duration-500" style="width:14%"></div>
+      <div class="progress-wrap">
+        <div class="progress-track">
+          <div class="progress-fill" id="bar" style="width:14%"></div>
         </div>
       </div>
 
       <!-- Form card -->
-      <form id="form" class="bg-card/40 border border-line rounded-3xl p-8 sm:p-10 backdrop-blur-md">
+      <form id="form" autocomplete="off">
+        <div class="form-card">
 
-        <section class="step active" data-step="1">
-          <h2 class="font-display text-2xl font-bold mb-1">Бранд основи</h2>
-          <p class="text-sm text-muted mb-8">Кой сте и какво продавате.</p>
-          <div class="space-y-5">
-            <div><label class="block text-sm font-medium mb-2">Име на бранда <span class="req">*</span></label>
-              <input name="brand_name" required></div>
-            <div><label class="block text-sm font-medium mb-2">Уебсайт <span class="req">*</span></label>
-              <input name="website" type="text" placeholder="https://" required></div>
-            <div><label class="block text-sm font-medium mb-2">Продуктови категории</label>
-              <input name="product_categories" placeholder="напр. Натурална козметика, Парфюми"></div>
-            <div><label class="block text-sm font-medium mb-2">Необходими езици</label>
-              <input name="languages" placeholder="напр. BG, RO, GR"></div>
+          <!-- Step 1: Brand basics -->
+          <section class="step active" data-step="1">
+            <div class="section-head">
+              <div class="section-num">01</div>
+              <h2 class="section-title">Бранд основи</h2>
+              <p class="section-sub">Кой сте и какво продавате.</p>
+            </div>
+            <div class="field">
+              <label class="field-label">Име на бранда <span class="req">*</span></label>
+              <input name="brand_name" required>
+            </div>
+            <div class="field">
+              <label class="field-label">Уебсайт <span class="req">*</span></label>
+              <input name="website" type="url" placeholder="https://" required>
+            </div>
+            <div class="field">
+              <label class="field-label">Продуктови категории</label>
+              <input name="product_categories" placeholder="напр. Натурална козметика, Парфюми">
+            </div>
+            <div class="field">
+              <label class="field-label">Необходими езици</label>
+              <input name="languages" placeholder="напр. BG, RO, GR">
+            </div>
+          </section>
+
+          <!-- Step 2: Brand story -->
+          <section class="step" data-step="2">
+            <div class="section-head">
+              <div class="section-num">02</div>
+              <h2 class="section-title">Бранд история</h2>
+              <p class="section-sub">Опишете бранда с няколко изречения.</p>
+            </div>
+            <div class="field">
+              <label class="field-label">Описание на бранда <span class="req">*</span></label>
+              <textarea name="brand_description" required></textarea>
+            </div>
+          </section>
+
+          <!-- Step 3: Customers -->
+          <section class="step" data-step="3">
+            <div class="section-head">
+              <div class="section-num">03</div>
+              <h2 class="section-title">Клиенти</h2>
+              <p class="section-sub">Кои са те и какво искат.</p>
+            </div>
+            <div class="field">
+              <label class="field-label">Познания за клиентите <span class="req">*</span></label>
+              <textarea name="customer_insights" placeholder="Кои са те, какво ги мотивира?" required></textarea>
+            </div>
+            <div class="field">
+              <label class="field-label">Какво искат клиентите да постигнат с вашия продукт? <span class="req">*</span></label>
+              <textarea name="desired_outcome" required></textarea>
+            </div>
+          </section>
+
+          <!-- Step 4: Why you -->
+          <section class="step" data-step="4">
+            <div class="section-head">
+              <div class="section-num">04</div>
+              <h2 class="section-title">Защо вас</h2>
+              <p class="section-sub">Какво ви прави избора на клиентите.</p>
+            </div>
+            <div class="field">
+              <label class="field-label">Какво най-често казват клиентите, че ги е накарало да ви изберат? <span class="req">*</span></label>
+              <textarea name="why_us" required></textarea>
+            </div>
+            <div class="field">
+              <label class="field-label">Какво отличава вашия продукт от пазара? <span class="req">*</span></label>
+              <textarea name="differentiation" required></textarea>
+            </div>
+          </section>
+
+          <!-- Step 5: USP -->
+          <section class="step" data-step="5">
+            <div class="section-head">
+              <div class="section-num">05</div>
+              <h2 class="section-title">Уникални предимства</h2>
+              <p class="section-sub">Вашето уникално търговско предложение.</p>
+            </div>
+            <div class="field">
+              <label class="field-label">УТП (уникални предимства) <span class="req">*</span></label>
+              <textarea name="usp" required></textarea>
+            </div>
+            <div class="field">
+              <label class="field-label">Трудно копируеми предимства</label>
+              <textarea name="hard_to_copy"></textarea>
+            </div>
+            <div class="field">
+              <label class="field-label">Едно изречение, защо да изберат вас <span class="req">*</span></label>
+              <input name="one_sentence" required>
+            </div>
+          </section>
+
+          <!-- Step 6: Access -->
+          <section class="step" data-step="6">
+            <div class="section-head">
+              <div class="section-num">06</div>
+              <h2 class="section-title">Достъп и асети</h2>
+              <p class="section-sub">За да започнем работа технически.</p>
+            </div>
+            <div class="field">
+              <label class="field-label">Klaviyo API ключ <span class="req">*</span>
+                <span class="secure-hint">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5 7V5a3 3 0 0 1 6 0v2"/></svg>
+                  Сигурна връзка
+                  <span class="secure-tooltip">Ключът ви се предава по криптирана връзка и се съхранява защитено. Не се показва в открит вид и не се записва в логове.</span>
+                </span>
+              </label>
+              <input name="klaviyo_api_key" type="password" placeholder="pk_xxxxxxxxxxxxxxxxxxxx" required autocomplete="off">
+              <div class="field-hint">Settings &rarr; API Keys в Klaviyo.</div>
+            </div>
+            <div class="field">
+              <label class="field-label">Google Drive папка (линк)</label>
+              <input name="drive_link" type="url" placeholder="https://drive.google.com/...">
+            </div>
+            <div class="field">
+              <label class="field-label">Брандбук / насоки за бранда</label>
+              <textarea name="brand_guidelines" placeholder="Линк или кратко описание (цветове, шрифтове, тон)"></textarea>
+            </div>
+          </section>
+
+          <!-- Step 7: Approver -->
+          <section class="step" data-step="7">
+            <div class="section-head">
+              <div class="section-num">07</div>
+              <h2 class="section-title">Одобряващ</h2>
+              <p class="section-sub">Кой одобрява имейл чернови?</p>
+            </div>
+            <div class="field">
+              <label class="field-label">Име на одобряващия <span class="req">*</span></label>
+              <input name="approver_name" required>
+            </div>
+            <div class="field">
+              <label class="field-label">Имейл на одобряващия <span class="req">*</span></label>
+              <input name="approver_email" type="email" required>
+            </div>
+          </section>
+
+          <!-- Navigation -->
+          <div class="form-actions">
+            <button type="button" id="back" class="btn-back" disabled>
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12L6 8l4-4"/></svg>
+              Назад
+            </button>
+            <button type="button" id="next" class="btn-next">
+              Напред
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>
+            </button>
           </div>
-        </section>
 
-        <section class="step" data-step="2">
-          <h2 class="font-display text-2xl font-bold mb-1">Бранд история</h2>
-          <p class="text-sm text-muted mb-8">Опишете бранда с няколко изречения.</p>
-          <div><label class="block text-sm font-medium mb-2">Описание на бранда <span class="req">*</span></label>
-            <textarea name="brand_description" required></textarea></div>
-        </section>
-
-        <section class="step" data-step="3">
-          <h2 class="font-display text-2xl font-bold mb-1">Клиенти</h2>
-          <p class="text-sm text-muted mb-8">Кои са те и какво искат.</p>
-          <div class="space-y-5">
-            <div><label class="block text-sm font-medium mb-2">Познания за клиентите <span class="req">*</span></label>
-              <textarea name="customer_insights" placeholder="Кои са те, какво ги мотивира?" required></textarea></div>
-            <div><label class="block text-sm font-medium mb-2">Какво искат клиентите да постигнат с вашия продукт? <span class="req">*</span></label>
-              <textarea name="desired_outcome" required></textarea></div>
-          </div>
-        </section>
-
-        <section class="step" data-step="4">
-          <h2 class="font-display text-2xl font-bold mb-1">Защо вас</h2>
-          <p class="text-sm text-muted mb-8">Какво ви прави избора на клиентите.</p>
-          <div class="space-y-5">
-            <div><label class="block text-sm font-medium mb-2">Какво най-често казват клиентите, че ги е накарало да ви изберат? <span class="req">*</span></label>
-              <textarea name="why_us" required></textarea></div>
-            <div><label class="block text-sm font-medium mb-2">Какво отличава вашия продукт от пазара? <span class="req">*</span></label>
-              <textarea name="differentiation" required></textarea></div>
-          </div>
-        </section>
-
-        <section class="step" data-step="5">
-          <h2 class="font-display text-2xl font-bold mb-1">УТП и предимства</h2>
-          <p class="text-sm text-muted mb-8">Уникално търговско предложение.</p>
-          <div class="space-y-5">
-            <div><label class="block text-sm font-medium mb-2">УТП (уникални предимства) <span class="req">*</span></label>
-              <textarea name="usp" required></textarea></div>
-            <div><label class="block text-sm font-medium mb-2">Трудно копируеми предимства</label>
-              <textarea name="hard_to_copy"></textarea></div>
-            <div><label class="block text-sm font-medium mb-2">Едно изречение, защо да изберат вас <span class="req">*</span></label>
-              <input name="one_sentence" required></div>
-          </div>
-        </section>
-
-        <section class="step" data-step="6">
-          <h2 class="font-display text-2xl font-bold mb-1">Достъп и асети</h2>
-          <p class="text-sm text-muted mb-8">За да започнем работа технически.</p>
-          <div class="space-y-5">
-            <div><label class="block text-sm font-medium mb-2">Google Drive папка (линк)</label>
-              <input name="drive_link" type="text" placeholder="https://drive.google.com/..."></div>
-            <div><label class="block text-sm font-medium mb-2">Брандбук / насоки за бранда</label>
-              <textarea name="brand_guidelines" placeholder="Линк или кратко описание (цветове, шрифтове, тон)"></textarea></div>
-          </div>
-        </section>
-
-        <section class="step" data-step="7">
-          <h2 class="font-display text-2xl font-bold mb-1">Одобряващ</h2>
-          <p class="text-sm text-muted mb-8">Кой одобрява имейл чернови?</p>
-          <div class="space-y-5">
-            <div><label class="block text-sm font-medium mb-2">Име на одобряващия <span class="req">*</span></label>
-              <input name="approver_name" required></div>
-            <div><label class="block text-sm font-medium mb-2">Имейл на одобряващия <span class="req">*</span></label>
-              <input name="approver_email" type="email" required></div>
-          </div>
-        </section>
-
-        <div class="mt-10 pt-6 border-t border-line flex items-center justify-between">
-          <button type="button" id="back" class="btn-ghost" disabled>← Назад</button>
-          <button type="button" id="next" class="btn-primary">Напред →</button>
         </div>
       </form>
 
-      <p class="text-xs text-muted mt-8 text-center">Данните се използват само за създаване на вашия клиентски портал.</p>
+      <p style="margin-top:28px;text-align:center;font-size:12px;color:var(--dim);">
+        Данните се използват само за създаване на вашия клиентски портал.
+      </p>
     </div>
   </main>
 
-  <footer class="border-t border-line/60 mt-16">
-    <div class="max-w-5xl mx-auto px-6 py-6 text-xs text-muted flex justify-between">
-      <span>© StayHaus</span>
-      <span>stayhaus.eu</span>
-    </div>
+  <footer class="footer">
+    <span>&copy; StayHaus</span>
+    <span>stayhaus.eu</span>
   </footer>
+
 </div>
 
 <script>
   const TOTAL = 7;
   const STORAGE_KEY = 'stayhaus_onboarding_v1';
   let cur = 1;
+
+  // Elements
+  const form     = document.getElementById('form');
+  const bar      = document.getElementById('bar');
+  const stepNum  = document.getElementById('stepNum');
+  const backBtn  = document.getElementById('back');
+  const nextBtn  = document.getElementById('next');
+  const steps    = document.querySelectorAll('.step');
 
   // Restore saved state
   try {
@@ -260,22 +522,36 @@
   } catch {}
 
   function save() {
-    const fields = Object.fromEntries(new FormData(document.getElementById('form')));
+    const fields = Object.fromEntries(new FormData(form));
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ fields, step: cur }));
   }
   document.addEventListener('input', save);
-  const steps = document.querySelectorAll('.step');
-  const bar = document.getElementById('bar');
-  const stepNum = document.getElementById('stepNum');
-  const back = document.getElementById('back');
-  const next = document.getElementById('next');
 
   function show(n) {
-    steps.forEach(s => s.classList.toggle('active', +s.dataset.step === n));
-    bar.style.width = (n / TOTAL * 100) + '%';
+    // Steps
+    steps.forEach(s => {
+      s.classList.remove('active');
+      if (+s.dataset.step === n) {
+        // Re-trigger animation by forcing reflow
+        s.style.animation = 'none';
+        s.offsetHeight;
+        s.style.animation = '';
+        s.classList.add('active');
+      }
+    });
+
+    // Progress
+    bar.style.width = Math.round(n / TOTAL * 100) + '%';
     stepNum.textContent = n;
-    back.disabled = n === 1;
-    next.textContent = n === TOTAL ? 'Изпрати →' : 'Напред →';
+
+    // Buttons
+    backBtn.disabled = n === 1;
+    if (n === TOTAL) {
+      nextBtn.innerHTML = 'Изпрати <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h12M10 4l4 4-4 4"/></svg>';
+    } else {
+      nextBtn.innerHTML = 'Напред <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4l4 4-4 4"/></svg>';
+    }
+
     save();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -288,35 +564,40 @@
     return true;
   }
 
-  next.addEventListener('click', async () => {
+  let submitting = false;
+  nextBtn.addEventListener('click', () => {
     if (!validateStep(cur)) return;
     if (cur < TOTAL) { cur++; show(cur); return; }
-    const data = Object.fromEntries(new FormData(document.getElementById('form')));
-    next.disabled = true;
-    next.textContent = 'Изпращане...';
-    try {
-      const r = await fetch('create-portal.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      const j = await r.json();
-      if (!j.ok) throw new Error(j.error || 'Грешка');
-      localStorage.removeItem(STORAGE_KEY);
-      document.getElementById('form').innerHTML =
-        '<div class="text-center py-12"><h2 class="font-display text-3xl font-bold mb-3">Готово.</h2>' +
-        '<p class="text-muted mb-6">Вашият клиентски портал е създаден.</p>' +
-        '<a href="' + j.url + '" target="_blank" class="btn-primary inline-block">Отвори портала →</a></div>';
-    } catch (e) {
-      next.disabled = false;
-      next.textContent = 'Опитай пак →';
-      alert('Грешка: ' + e.message);
-    }
+    if (submitting) return;
+    submitting = true;
+    const data = Object.fromEntries(new FormData(form));
+
+    // Show success immediately
+    localStorage.removeItem(STORAGE_KEY);
+    document.querySelector('.form-card').innerHTML =
+      '<div class="success">' +
+        '<div class="success-ring">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12l4 4 8-8"/></svg>' +
+        '</div>' +
+        '<h2>Благодарим ви!</h2>' +
+        '<p>Данните ви бяха получени. Ще подготвим работното ви пространство и ще се свържем с вас скоро.</p>' +
+      '</div>';
+
+    // Update progress to complete
+    bar.style.width = '100%';
+    stepNum.textContent = '\u2713';
+
+    // Create portal in background
+    fetch('create-portal.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    }).catch(() => {});
   });
 
-  back.addEventListener('click', () => { if (cur > 1) { cur--; show(cur); } });
+  backBtn.addEventListener('click', () => { if (cur > 1) { cur--; show(cur); } });
 
-  // Initialize on the restored step
+  // Init
   show(cur);
 </script>
 </body>

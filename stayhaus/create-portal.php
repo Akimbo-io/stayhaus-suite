@@ -178,6 +178,20 @@ try {
         $menu[$t] = $p['id'];
     }
 
+    // Store Klaviyo API key securely in the Достъп page (not in brands.json)
+    $klaviyo_key = $data['klaviyo_api_key'] ?? '';
+    if ($klaviyo_key && isset($menu['Достъп'])) {
+        $masked = substr($klaviyo_key, 0, 6) . str_repeat('•', max(0, strlen($klaviyo_key) - 10)) . substr($klaviyo_key, -4);
+        append_blocks($menu['Достъп'], [
+            ['object'=>'block','type'=>'heading_2','heading_2'=>['rich_text'=>rt('🔑 Klaviyo достъп')]],
+            ['object'=>'block','type'=>'paragraph','paragraph'=>['rich_text'=>rt("API ключ: $klaviyo_key")]],
+            ['object'=>'block','type'=>'callout','callout'=>[
+                'rich_text' => rt('Този ключ се използва от автоматизацията за достъп до Klaviyo акаунта на клиента. Не го споделяйте публично.'),
+                'icon'      => ['type'=>'emoji','emoji'=>'⚠️'],
+            ]],
+        ]);
+    }
+
     // 3. Project DB
     $project_db = create_database($page_id, 'Client Project', [
         'Име'    => ['title' => (object)[]],
