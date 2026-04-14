@@ -201,6 +201,73 @@
   }
   .secure-hint:hover .secure-tooltip { opacity: 1; visibility: visible; transform: translateY(0); }
 
+  /* === Language checkboxes === */
+  .lang-checks {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .lang-check {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-radius: 10px;
+    background: rgba(15, 5, 32, .6); border: 1px solid var(--line);
+    font-size: 14px; color: var(--text); cursor: pointer;
+    transition: border-color .2s, background .2s, box-shadow .2s;
+  }
+  .lang-check:hover { border-color: rgba(180,124,253,.4); background: rgba(20, 3, 48, .8); }
+  .lang-check input { display: none; }
+  .lc-box {
+    width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0;
+    border: 1.5px solid var(--line); background: rgba(15, 5, 32, .4);
+    position: relative; transition: all .2s;
+  }
+  .lc-box::after {
+    content: ''; position: absolute; inset: 3px; border-radius: 3px;
+    background: var(--purple); opacity: 0; transform: scale(.3);
+    transition: all .2s cubic-bezier(.34,1.56,.64,1);
+  }
+  .lang-check input:checked ~ .lc-box {
+    border-color: var(--purple); background: rgba(180,124,253,.15);
+  }
+  .lang-check input:checked ~ .lc-box::after { opacity: 1; transform: scale(1); }
+  .lang-check:has(input:checked) {
+    border-color: rgba(180,124,253,.5);
+    background: rgba(180,124,253,.08);
+    box-shadow: 0 0 12px rgba(180,124,253,.08);
+  }
+  .lang-other-input {
+    width: 100%;
+    background: rgba(15, 5, 32, .6);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px 20px; height: 52px;
+    font-size: 15px; color: var(--text);
+    font-family: inherit;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+  }
+  .lang-other-input:focus {
+    outline: none; border-color: var(--purple);
+    background: rgba(20, 3, 48, .8);
+    box-shadow: 0 0 0 3px rgba(180,124,253,.1);
+  }
+  .lang-other-input::placeholder { color: var(--dim); }
+  .lang-other-wrap { display: flex; flex-direction: column; gap: 8px; }
+  .lang-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .lang-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 10px 6px 14px; border-radius: 8px;
+    background: rgba(180,124,253,.12); border: 1px solid rgba(180,124,253,.35);
+    font-size: 13px; color: var(--purple); font-weight: 500;
+  }
+  .lang-tag-x {
+    width: 16px; height: 16px; border-radius: 4px; border: none;
+    background: rgba(180,124,253,.2); color: var(--purple);
+    font-size: 13px; line-height: 1; cursor: pointer; display: grid; place-items: center;
+    transition: background .15s;
+  }
+  .lang-tag-x:hover { background: rgba(248,113,113,.3); color: #f87171; }
+  .lang-add-row { display: flex; gap: 8px; }
+  .lang-add-row .lang-other-input { flex: 1; }
+  @media (max-width: 600px) { .lang-checks { grid-template-columns: 1fr; } }
+
   /* === Buttons === */
   .form-actions {
     margin-top: 36px; padding-top: 24px;
@@ -343,15 +410,30 @@
             </div>
             <div class="field">
               <label class="field-label">Уебсайт <span class="req">*</span></label>
-              <input name="website" type="url" placeholder="https://" required>
-            </div>
-            <div class="field">
-              <label class="field-label">Продуктови категории</label>
-              <input name="product_categories" placeholder="напр. Натурална козметика, Парфюми">
+              <input name="website" type="text" placeholder="nike.com" required>
             </div>
             <div class="field">
               <label class="field-label">Необходими езици</label>
-              <input name="languages" placeholder="напр. BG, RO, GR">
+              <div class="lang-checks">
+                <label class="lang-check"><input type="checkbox" name="lang_bg" value="BG"><span class="lc-box"></span>Български</label>
+                <label class="lang-check"><input type="checkbox" name="lang_en" value="EN"><span class="lc-box"></span>English</label>
+                <label class="lang-check"><input type="checkbox" name="lang_de" value="DE"><span class="lc-box"></span>Deutsch</label>
+                <label class="lang-check"><input type="checkbox" name="lang_fr" value="FR"><span class="lc-box"></span>Francais</label>
+                <label class="lang-check"><input type="checkbox" name="lang_es" value="ES"><span class="lc-box"></span>Espanol</label>
+                <label class="lang-check"><input type="checkbox" name="lang_it" value="IT"><span class="lc-box"></span>Italiano</label>
+                <label class="lang-check"><input type="checkbox" name="lang_ro" value="RO"><span class="lc-box"></span>Romana</label>
+                <label class="lang-check"><input type="checkbox" name="lang_el" value="EL"><span class="lc-box"></span>Ellinika</label>
+                <label class="lang-check"><input type="checkbox" name="lang_nl" value="NL"><span class="lc-box"></span>Nederlands</label>
+                <label class="lang-check"><input type="checkbox" name="lang_pt" value="PT"><span class="lc-box"></span>Portugues</label>
+                <label class="lang-check"><input type="checkbox" name="lang_pl" value="PL"><span class="lc-box"></span>Polski</label>
+                <label class="lang-check"><input type="checkbox" name="lang_other" value="OTHER"><span class="lc-box"></span>Друг</label>
+              </div>
+              <div class="lang-other-wrap" style="display:none;margin-top:10px">
+                <div class="lang-tags" id="langTags"></div>
+                <div class="lang-add-row">
+                  <input id="langOtherInput" class="lang-other-input" placeholder="Добавете език и натиснете Enter...">
+                </div>
+              </div>
             </div>
           </section>
 
@@ -363,8 +445,9 @@
               <p class="section-sub">Опишете бранда с няколко изречения.</p>
             </div>
             <div class="field">
-              <label class="field-label">Описание на бранда <span class="req">*</span></label>
-              <textarea name="brand_description" required></textarea>
+              <label class="field-label">Описание на бранда</label>
+              <textarea name="brand_description" placeholder="Ако оставите празно, ще извлечем описание от уебсайта ви."></textarea>
+              <div class="field-hint">Незадължително — ако не попълните, ще бъде извлечено автоматично от сайта.</div>
             </div>
           </section>
 
@@ -438,7 +521,7 @@
                   <span class="secure-tooltip">Ключът ви се предава по криптирана връзка и се съхранява защитено. Не се показва в открит вид и не се записва в логове.</span>
                 </span>
               </label>
-              <input name="klaviyo_api_key" type="password" placeholder="pk_xxxxxxxxxxxxxxxxxxxx" required autocomplete="off">
+              <input name="klaviyo_api_key" type="password" placeholder="pk_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
               <div class="field-hint">Settings &rarr; API Keys в Klaviyo.</div>
             </div>
             <div class="field">
@@ -464,7 +547,7 @@
             </div>
             <div class="field">
               <label class="field-label">Имейл на одобряващия <span class="req">*</span></label>
-              <input name="approver_email" type="email" required>
+              <input name="approver_email" type="email">
             </div>
           </section>
 
@@ -570,7 +653,10 @@
     if (cur < TOTAL) { cur++; show(cur); return; }
     if (submitting) return;
     submitting = true;
-    const data = Object.fromEntries(new FormData(form));
+    const raw = Object.fromEntries(new FormData(form));
+    const langs = [...document.querySelectorAll('.lang-check input:checked')].map(c => c.value).filter(v => v !== 'OTHER');
+    langs.push(...otherLangs);
+    const data = { ...raw, languages: langs };
 
     // Show success immediately
     localStorage.removeItem(STORAGE_KEY);
@@ -596,6 +682,38 @@
   });
 
   backBtn.addEventListener('click', () => { if (cur > 1) { cur--; show(cur); } });
+
+  // "Other" languages — tag input
+  const otherCb = document.querySelector('[name="lang_other"]');
+  const otherWrap = document.querySelector('.lang-other-wrap');
+  const otherInput = document.getElementById('langOtherInput');
+  const tagsEl = document.getElementById('langTags');
+  const otherLangs = [];
+
+  if (otherCb && otherWrap) {
+    otherCb.addEventListener('change', () => {
+      otherWrap.style.display = otherCb.checked ? 'flex' : 'none';
+      if (otherCb.checked) otherInput.focus();
+    });
+  }
+  function renderTags() {
+    tagsEl.innerHTML = otherLangs.map((l, i) =>
+      `<span class="lang-tag">${l}<button type="button" class="lang-tag-x" data-i="${i}">&times;</button></span>`
+    ).join('');
+    tagsEl.querySelectorAll('.lang-tag-x').forEach(b => {
+      b.addEventListener('click', () => { otherLangs.splice(+b.dataset.i, 1); renderTags(); });
+    });
+  }
+  if (otherInput) {
+    otherInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const v = otherInput.value.trim();
+        if (v && !otherLangs.includes(v)) { otherLangs.push(v); renderTags(); }
+        otherInput.value = '';
+      }
+    });
+  }
 
   // Init
   show(cur);
