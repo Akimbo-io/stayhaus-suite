@@ -376,6 +376,14 @@
         if (msg.type === "cancel") {
           figma.closePlugin();
         }
+        if (msg.type === "get-api-key") {
+          const key = yield figma.clientStorage.getAsync("anthropic-api-key");
+          figma.ui.postMessage({ type: "api-key", key: key || "" });
+        }
+        if (msg.type === "set-api-key") {
+          yield figma.clientStorage.setAsync("anthropic-api-key", msg.key || "");
+          figma.ui.postMessage({ type: "api-key-saved" });
+        }
       });
     }
   });

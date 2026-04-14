@@ -483,6 +483,62 @@
   .status.success{display:block;background:var(--green-dim);color:var(--green)}
   .status.error{display:block;background:var(--red-dim);color:var(--red)}
 
+  /* ── MODE SWITCH ── */
+  .mode-switch{
+    display:flex;gap:4px;padding:3px;margin-bottom:10px;
+    background:var(--surface-2);border-radius:var(--radius-sm);
+  }
+  .mode-btn{
+    flex:1;padding:7px 10px;border:none;background:transparent;
+    font-size:11px;font-weight:600;color:var(--text-muted);
+    border-radius:calc(var(--radius-sm) - 2px);cursor:pointer;
+    transition:background 0.15s, color 0.15s;
+  }
+  .mode-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 2px rgba(0,0,0,0.08)}
+  .mode-btn:hover:not(.active){color:var(--text)}
+
+  /* ── LIVE SECTION ── */
+  .live-section{display:none;flex-direction:column;gap:10px}
+  .live-section.visible{display:flex}
+  .live-row{display:flex;gap:8px;align-items:center}
+  .live-row .label{margin:0;flex-shrink:0}
+  .live-input, .live-textarea{
+    width:100%;padding:8px 10px;border:1px solid var(--border);
+    border-radius:var(--radius-sm);background:var(--surface);
+    font-size:12px;font-family:inherit;color:var(--text);
+    box-sizing:border-box;
+  }
+  .live-input:focus, .live-textarea:focus{outline:none;border-color:var(--accent)}
+  .live-textarea{resize:vertical;min-height:48px;line-height:1.4}
+  .live-hint{font-size:10px;color:var(--text-muted);margin-top:-4px}
+  .settings-btn{
+    display:inline-flex;align-items:center;gap:4px;
+    padding:4px 8px;border:1px solid var(--border);
+    border-radius:var(--radius-sm);background:var(--surface);
+    font-size:10px;color:var(--text-muted);cursor:pointer;
+  }
+  .settings-btn:hover{color:var(--text);border-color:var(--text-muted)}
+
+  /* ── DRAWER ── */
+  .drawer-backdrop{
+    position:fixed;inset:0;background:rgba(0,0,0,0.3);
+    display:none;z-index:100;
+  }
+  .drawer-backdrop.open{display:block}
+  .drawer{
+    position:fixed;bottom:0;left:0;right:0;
+    background:var(--surface);border-top:1px solid var(--border);
+    border-radius:8px 8px 0 0;padding:14px;z-index:101;
+    transform:translateY(100%);transition:transform 0.2s ease;
+  }
+  .drawer.open{transform:translateY(0)}
+  .drawer h3{margin:0 0 10px 0;font-size:13px;font-weight:600}
+  .drawer-actions{display:flex;gap:6px;margin-top:10px}
+  .drawer-actions button{flex:1;padding:7px;border-radius:var(--radius-sm);
+    font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border);
+    background:var(--surface-2);color:var(--text);}
+  .drawer-actions button.primary{background:var(--accent);color:white;border-color:var(--accent)}
+
   /* ── ANIMATIONS ── */
   @keyframes fadeIn{from{opacity:0}to{opacity:1}}
   @keyframes chipIn{from{opacity:0;transform:scale(0.88)}to{opacity:1;transform:scale(1)}}
@@ -497,6 +553,27 @@
 </div>
 
 <div class="content">
+
+  <div class="mode-switch" role="tablist">
+    <button class="mode-btn active" data-mode="csv" id="modeCsv">CSV / Excel</button>
+    <button class="mode-btn" data-mode="live" id="modeLive">Live (Claude)</button>
+  </div>
+
+  <div class="live-section" id="liveSection">
+    <div>
+      <div class="label">Target languages</div>
+      <input type="text" class="live-input" id="liveTargetLangs" placeholder="bg, de, fr" />
+      <div class="live-hint">Comma-separated ISO codes</div>
+    </div>
+    <div>
+      <div class="label">Brand context <span style="color:var(--text-muted);font-weight:400">(optional)</span></div>
+      <textarea class="live-textarea" id="liveBrandContext" placeholder="e.g. Skincare brand, warm/friendly tone, Gen Z audience"></textarea>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="live-hint" id="liveKeyStatus">API key: not set</div>
+      <button class="settings-btn" id="liveSettingsBtn">&#9881; Settings</button>
+    </div>
+  </div>
 
   <div class="drop-zone" id="dropZone">
     <div class="drop-icon">
@@ -574,6 +651,20 @@
   </button>
 
   <div class="status" id="statusBar"></div>
+</div>
+
+<div class="drawer-backdrop" id="drawerBackdrop"></div>
+<div class="drawer" id="settingsDrawer">
+  <h3>Anthropic API key</h3>
+  <input type="password" class="live-input" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off" />
+  <div class="live-hint" style="margin-top:6px">
+    Stored locally in Figma (clientStorage). Never leaves your machine.
+    <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--accent)">Get a key</a>.
+  </div>
+  <div class="drawer-actions">
+    <button id="drawerCancel">Cancel</button>
+    <button class="primary" id="drawerSave">Save</button>
+  </div>
 </div>
 
 <script>
@@ -1065,7 +1156,209 @@ document.getElementById('btnSample').addEventListener('click', () => {
 
 document.getElementById('sheetSelect').addEventListener('change', loadSheet);
 
+/* ── MODE + LIVE ── */
+let currentMode = 'csv'; // 'csv' | 'live'
+let apiKeyCache = '';
+let pendingScan = null; // resolver for scan-result in live mode
+
+function setMode(mode) {
+  currentMode = mode;
+  document.getElementById('modeCsv').classList.toggle('active', mode === 'csv');
+  document.getElementById('modeLive').classList.toggle('active', mode === 'live');
+  document.getElementById('liveSection').classList.toggle('visible', mode === 'live');
+
+  // Hide CSV-specific UI in live mode
+  const csvEls = ['dropZone','sheetSelectArea','dataSummary','sourceLangArea'];
+  csvEls.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = mode === 'live' ? 'none' : '';
+  });
+
+  const btn = document.getElementById('translateBtn');
+  if (mode === 'live') {
+    btn.disabled = false;
+    btn.innerHTML = '<span>Translate &amp; Apply</span>';
+  } else {
+    btn.disabled = !csvData;
+    btn.innerHTML = csvData ? '<span>Generate Translations</span>' : '<span>Upload file to start</span>';
+  }
+  setTimeout(requestResize, 60);
+}
+
+document.getElementById('modeCsv').addEventListener('click', () => setMode('csv'));
+document.getElementById('modeLive').addEventListener('click', () => setMode('live'));
+
+/* Settings drawer */
+function openDrawer() {
+  document.getElementById('apiKeyInput').value = apiKeyCache;
+  document.getElementById('drawerBackdrop').classList.add('open');
+  document.getElementById('settingsDrawer').classList.add('open');
+  setTimeout(() => document.getElementById('apiKeyInput').focus(), 100);
+}
+function closeDrawer() {
+  document.getElementById('drawerBackdrop').classList.remove('open');
+  document.getElementById('settingsDrawer').classList.remove('open');
+}
+document.getElementById('liveSettingsBtn').addEventListener('click', openDrawer);
+document.getElementById('drawerBackdrop').addEventListener('click', closeDrawer);
+document.getElementById('drawerCancel').addEventListener('click', closeDrawer);
+document.getElementById('drawerSave').addEventListener('click', () => {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  parent.postMessage({ pluginMessage: { type: 'set-api-key', key } }, '*');
+});
+
+function updateKeyStatus() {
+  const el = document.getElementById('liveKeyStatus');
+  el.textContent = apiKeyCache ? 'API key: saved' : 'API key: not set';
+  el.style.color = apiKeyCache ? 'var(--green)' : 'var(--text-muted)';
+}
+
+// Ask plugin for stored key on load
+parent.postMessage({ pluginMessage: { type: 'get-api-key' } }, '*');
+
+/* Request a scan and return the layers via promise (live mode only) */
+function requestScan() {
+  return new Promise((resolve) => {
+    pendingScan = resolve;
+    parent.postMessage({ pluginMessage: { type: 'scan' } }, '*');
+  });
+}
+
+/* Call Claude to translate an array of source texts into one target language */
+async function translateBatch(sourceTexts, sourceLang, targetLang, brandContext, apiKey) {
+  const systemPrompt =
+    'You are a professional email marketing translator. ' +
+    'Translate each item from ' + sourceLang.toUpperCase() + ' to ' + targetLang.toUpperCase() + '. ' +
+    'Preserve tone, brand voice, emphasis, punctuation and emojis. ' +
+    'Keep translations concise — CTAs must stay short.' +
+    (brandContext ? '\n\nBrand context: ' + brandContext : '') +
+    '\n\nReturn ONLY a JSON array of strings, same length and order as the input. No prose, no code fences.';
+
+  const userPrompt = JSON.stringify(sourceTexts);
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-6',
+      max_tokens: 4000,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    }),
+  });
+
+  if (!res.ok) {
+    const txt = await res.text();
+    throw new Error('Claude ' + res.status + ': ' + txt.slice(0, 300));
+  }
+  const json = await res.json();
+  const text = (json.content && json.content[0] && json.content[0].text) || '';
+  const match = text.match(/\[[\s\S]*\]/);
+  if (!match) throw new Error('Could not parse JSON from Claude response: ' + text.slice(0, 300));
+  const arr = JSON.parse(match[0]);
+  if (!Array.isArray(arr) || arr.length !== sourceTexts.length) {
+    throw new Error('Claude returned ' + (Array.isArray(arr) ? arr.length : 'non-array') + ' items, expected ' + sourceTexts.length);
+  }
+  return arr;
+}
+
+async function runLiveTranslate() {
+  const btn = document.getElementById('translateBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span>Translating...</span>';
+
+  try {
+    if (!apiKeyCache) {
+      setStatus('error', 'API key missing — open Settings.');
+      openDrawer();
+      btn.disabled = false;
+      btn.innerHTML = '<span>Translate &amp; Apply</span>';
+      return;
+    }
+
+    const targetInput = document.getElementById('liveTargetLangs').value.trim();
+    const targetLangs = targetInput.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+    if (targetLangs.length === 0) {
+      setStatus('error', 'Enter at least one target language.');
+      btn.disabled = false;
+      btn.innerHTML = '<span>Translate &amp; Apply</span>';
+      return;
+    }
+
+    const sourceLang = 'en'; // MVP: source is whatever is in the frame; we just label it EN
+    const brandContext = document.getElementById('liveBrandContext').value.trim();
+
+    setStatus('info', 'Scanning frame...');
+    const layers = await requestScan();
+    if (!layers || layers.length === 0) {
+      setStatus('error', 'No text found. Select a frame first.');
+      btn.disabled = false;
+      btn.innerHTML = '<span>Translate &amp; Apply</span>';
+      return;
+    }
+
+    // Unique source texts, preserving order
+    const seen = new Set();
+    const sourceTexts = [];
+    for (const l of layers) {
+      const t = (l.content || '').trim();
+      if (t && !seen.has(t)) { seen.add(t); sourceTexts.push(t); }
+    }
+
+    // Call Claude once per language
+    const rows = sourceTexts.map(t => ({ sourceText: t, translations: {} }));
+    const failed = [];
+    for (let i = 0; i < targetLangs.length; i++) {
+      const lang = targetLangs[i];
+      setStatus('info', 'Translating ' + lang.toUpperCase() + ' (' + (i + 1) + '/' + targetLangs.length + ')...');
+      try {
+        const translated = await translateBatch(sourceTexts, sourceLang, lang, brandContext, apiKeyCache);
+        translated.forEach((tr, idx) => { rows[idx].translations[lang] = tr; });
+      } catch (e) {
+        failed.push(lang + ' (' + e.message + ')');
+      }
+    }
+
+    const okLangs = targetLangs.filter(l => !failed.some(f => f.startsWith(l + ' ')));
+    if (okLangs.length === 0) {
+      setStatus('error', 'All translations failed: ' + failed.join('; '));
+      btn.disabled = false;
+      btn.innerHTML = '<span>Translate &amp; Apply</span>';
+      return;
+    }
+
+    setStatus('info', 'Applying to Figma...');
+    parent.postMessage({
+      pluginMessage: {
+        type: 'translate',
+        data: { sourceLang, targetLangs: okLangs, rows },
+        autoResize: document.getElementById('autoResize').value,
+        emailMeta: null,
+      }
+    }, '*');
+
+    if (failed.length > 0) {
+      // Append failure note after the 'done' status fires
+      setTimeout(() => {
+        const bar = document.getElementById('statusBar');
+        bar.textContent = bar.textContent + ' Failed: ' + failed.join('; ');
+      }, 500);
+    }
+  } catch (e) {
+    setStatus('error', e.message);
+    btn.disabled = false;
+    btn.innerHTML = '<span>Translate &amp; Apply</span>';
+  }
+}
+
 document.getElementById('translateBtn').addEventListener('click', () => {
+  if (currentMode === 'live') { runLiveTranslate(); return; }
+
   if (!csvData) return;
   const btn = document.getElementById('translateBtn');
   btn.disabled = true;
@@ -1125,17 +1418,24 @@ onmessage = (event) => {
     setStatus('error', msg.message);
     const btn = document.getElementById('translateBtn');
     btn.disabled = false;
-    btn.innerHTML = '<span>Generate Translations</span>';
+    btn.innerHTML = currentMode === 'live' ? '<span>Translate &amp; Apply</span>' : '<span>Generate Translations</span>';
   }
 
   if (msg.type === 'done') {
     setStatus('success', msg.message);
     const btn = document.getElementById('translateBtn');
     btn.disabled = false;
-    btn.innerHTML = '<span>Done! Run again?</span>';
+    btn.innerHTML = currentMode === 'live' ? '<span>Translate &amp; Apply</span>' : '<span>Done! Run again?</span>';
   }
 
   if (msg.type === 'scan-result') {
+    // If live mode is awaiting scan results, resolve the promise and skip the scan list render
+    if (pendingScan) {
+      const resolve = pendingScan;
+      pendingScan = null;
+      resolve(msg.layers || []);
+      return;
+    }
     const div = document.getElementById('scanResults');
     div.style.display = 'block';
     if (!msg.layers || msg.layers.length === 0) {
@@ -1146,6 +1446,18 @@ onmessage = (event) => {
       '<div class="scan-item"><span class="name">' + l.name + '</span> <span class="content">"' + l.content + '"</span></div>'
     ).join('');
     setTimeout(requestResize, 60);
+  }
+
+  if (msg.type === 'api-key') {
+    apiKeyCache = msg.key || '';
+    updateKeyStatus();
+  }
+
+  if (msg.type === 'api-key-saved') {
+    // Reload the cached value
+    parent.postMessage({ pluginMessage: { type: 'get-api-key' } }, '*');
+    closeDrawer();
+    setStatus('success', 'API key saved.');
   }
 };
 </script>
