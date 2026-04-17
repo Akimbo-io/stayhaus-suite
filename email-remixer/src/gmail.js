@@ -102,11 +102,23 @@ export async function getAttachment(auth, messageId, attachmentId) {
  * @returns {Promise<Array<object>>} - Array of full Gmail message objects
  */
 export async function fetchEmailsFromSender(auth, senderEmail, maxResults = 10) {
+  return fetchEmailsByQuery(auth, `from:${senderEmail}`, maxResults);
+}
+
+/**
+ * Lists messages matching a raw Gmail query and fetches their full payloads.
+ *
+ * @param {object} auth - Authorized Google OAuth2 client
+ * @param {string} query - Gmail search query (e.g. "category:promotions")
+ * @param {number} [maxResults=10] - Maximum number of messages to return
+ * @returns {Promise<Array<object>>} - Array of full Gmail message objects
+ */
+export async function fetchEmailsByQuery(auth, query, maxResults = 10) {
   const gmail = google.gmail({ version: 'v1', auth });
 
   const listResponse = await gmail.users.messages.list({
     userId: 'me',
-    q: `from:${senderEmail}`,
+    q: query,
     maxResults,
   });
 

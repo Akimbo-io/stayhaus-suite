@@ -1,195 +1,980 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: Inter, system-ui, sans-serif;
-      background: #ffffff;
-      color: #111;
-      font-size: 12px;
-    }
+<meta charset="utf-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300;1,9..144,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:         #0D0B12;
+    --bg2:        #14121C;
+    --card:       #1C1928;
+    --card-up:    #262234;
+    --line:       #322E40;
+    --line-sub:   rgba(50,46,64,0.55);
+    --text:       #F2EFF8;
+    --text-sec:   #C0B9D0;
+    --text-muted: #8A8399;
+    --accent:     #B47CFD;
+    --accent-2:   #FF7FC2;
+    --accent-dim: rgba(180,124,253,0.14);
+    --accent-line:rgba(180,124,253,0.38);
+    --green:      #5CD97E;
+    --green-dim:  rgba(92,217,126,0.10);
+    --green-line: rgba(92,217,126,0.28);
+    --amber:      #E4A832;
+    --amber-dim:  rgba(228,168,50,0.09);
+    --red:        #E8503A;
+    --red-dim:    rgba(232,80,58,0.10);
+    --radius:     8px;
+    --radius-sm:  6px;
+    --mono:       'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+    --body:       'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --display:    'Fraunces', Georgia, serif;
+  }
 
-    .header {
-      padding: 12px 14px 8px;
-      border-bottom: 1px solid #eee;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+  *{box-sizing:border-box;margin:0;padding:0}
 
-    .header h2 { font-size: 13px; font-weight: 600; }
+  html,body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--body);
+    font-size:13px;
+    line-height:1.45;
+    height:100vh;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
 
-    .btn-refresh {
-      background: none;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      padding: 3px 8px;
-      font-size: 11px;
-      cursor: pointer;
-      color: #555;
-      font-family: inherit;
-    }
-    .btn-refresh:hover { background: #f5f5f5; }
+  body{
+    display:flex;flex-direction:column;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 20% -5%, rgba(180,124,253,0.09) 0%, transparent 60%),
+      radial-gradient(ellipse 55% 35% at 85% 105%, rgba(255,127,194,0.05) 0%, transparent 55%);
+  }
 
-    .email-list {
-      overflow-y: auto;
-      max-height: 320px;
-    }
+  /* gradient accent line — fixed banner of identity */
+  body::before{
+    content:'';position:fixed;top:0;left:0;right:0;
+    height:1px;z-index:100;
+    background:linear-gradient(90deg, transparent 4%, var(--accent) 38%, var(--accent-2) 62%, transparent 96%);
+    opacity:0.55;
+  }
 
-    .email-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 14px;
-      border-bottom: 1px solid #f0f0f0;
-      gap: 8px;
-    }
+  /* scrollbars */
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(138,131,153,0.38);border-radius:4px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(138,131,153,0.6)}
+  ::-webkit-scrollbar-corner{background:transparent}
 
-    .email-item:hover { background: #fafafa; }
+  /* ── HEADER ─────────────────────────────────────────────── */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 20px 14px;
+    border-bottom:1px solid var(--line);
+    flex-shrink:0;
+  }
+  .wordmark{
+    font-family:var(--display);
+    font-weight:300;font-size:18px;letter-spacing:-0.02em;
+    font-variation-settings:"opsz" 144;
+    color:var(--text);
+    display:flex;align-items:baseline;gap:7px;
+  }
+  .wordmark em{
+    font-style:italic;font-weight:300;color:var(--accent);
+  }
+  .wordmark-dot{
+    width:4px;height:4px;border-radius:50%;background:var(--accent);
+    display:inline-block;transform:translateY(-2px);
+    box-shadow:0 0 10px rgba(180,124,253,0.6);
+    animation:breathe 3.8s ease-in-out infinite;
+  }
+  @keyframes breathe{0%,100%{opacity:0.55;transform:translateY(-2px) scale(0.9)}50%{opacity:1;transform:translateY(-2px) scale(1.05)}}
 
-    .email-info { flex: 1; min-width: 0; }
-    .email-subject {
-      font-size: 12px;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .email-meta { font-size: 10px; color: #999; margin-top: 2px; }
+  .version{
+    font-family:var(--mono);font-size:9px;letter-spacing:0.1em;
+    color:var(--text-muted);
+  }
 
-    .btn-import {
-      background: #18a0fb;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 4px 10px;
-      font-size: 11px;
-      font-weight: 500;
-      cursor: pointer;
-      white-space: nowrap;
-      font-family: inherit;
-      flex-shrink: 0;
-    }
-    .btn-import:hover { background: #0d8de8; }
-    .btn-import:disabled { background: #ccc; cursor: not-allowed; }
-    .btn-import.done { background: #2d6a4f; }
+  /* ── MODE SWITCH ─────────────────────────────────────────── */
+  .mode-switch{
+    display:flex;align-items:stretch;
+    padding:0 18px;
+    border-bottom:1px solid var(--line-sub);
+    flex-shrink:0;
+    position:relative;
+    background:
+      linear-gradient(180deg, rgba(180,124,253,0.045) 0%, transparent 75%),
+      radial-gradient(ellipse 70% 100% at 50% -30%, rgba(255,127,194,0.05), transparent 70%);
+  }
+  /* thin hairline divider on the centerline */
+  .mode-switch::before{
+    content:'';position:absolute;top:12px;bottom:12px;left:50%;width:1px;
+    background:var(--line-sub);opacity:0.55;
+  }
+  .mode-step{
+    flex:1;
+    display:flex;align-items:center;justify-content:center;
+    padding:14px 4px 15px;
+    background:none;border:none;cursor:pointer;
+    position:relative;
+    /* single font-family for both states to avoid fallback flash */
+    font-family:var(--display);
+    font-variation-settings:"opsz" 144;
+    font-weight:500;
+    font-style:normal;
+    font-size:13px;
+    letter-spacing:-0.005em;
+    color:var(--text-muted);
+    line-height:1;
+    transition:
+      color 0.22s ease,
+      font-size 0.22s ease,
+      letter-spacing 0.22s ease;
+  }
+  .mode-step:hover{color:var(--text-sec)}
+  .mode-step.active{
+    color:var(--text);
+    font-style:italic;
+    font-size:15.5px;
+    letter-spacing:-0.015em;
+  }
+  /* sliding gradient underline */
+  .mode-step::after{
+    content:'';position:absolute;bottom:-1px;
+    left:22%;right:22%;height:1.5px;
+    background:linear-gradient(90deg, transparent, var(--accent) 28%, var(--accent-2) 72%, transparent);
+    transform:scaleX(0);transform-origin:center;
+    transition:transform 0.32s cubic-bezier(0.65,0,0.35,1);
+    box-shadow:0 0 10px rgba(180,124,253,0.45);
+  }
+  .mode-step.active::after{transform:scaleX(1)}
 
-    .footer {
-      padding: 8px 14px;
-      border-top: 1px solid #eee;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+  /* ── VIEWS ────────────────────────────────────────────────── */
+  .view{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0}
+  .view.active{display:flex}
 
-    .btn-import-all {
-      flex: 1;
-      background: #111;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 7px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      font-family: inherit;
-    }
-    .btn-import-all:hover { background: #333; }
-    .btn-import-all:disabled { background: #ccc; cursor: not-allowed; }
+  /* ── PANE LABEL (shared micro) ───────────────────────────── */
+  .micro{
+    font-family:var(--mono);
+    font-size:9px;font-weight:500;
+    text-transform:uppercase;letter-spacing:0.15em;
+    color:var(--text-muted);
+  }
 
-    .status {
-      font-size: 11px;
-      color: #999;
-      padding: 6px 14px;
-      text-align: center;
-    }
-    .status.error { color: #e63946; }
-    .status.success { color: #2d6a4f; }
+  /* ── EMAILS VIEW ─────────────────────────────────────────── */
+  .emails-top{
+    display:flex;align-items:center;gap:10px;
+    padding:14px 20px 10px;
+    flex-shrink:0;
+  }
+  .emails-top .micro{flex:1}
+  .icon-btn{
+    display:inline-flex;align-items:center;gap:5px;
+    font-family:var(--mono);font-size:10px;font-weight:500;
+    letter-spacing:0.04em;
+    padding:5px 9px;border-radius:var(--radius-sm);
+    background:var(--card);color:var(--text-sec);
+    border:1px solid var(--line);
+    cursor:pointer;transition:all 0.18s ease;
+  }
+  .icon-btn:hover{border-color:var(--accent-line);color:var(--text);background:var(--card-up)}
+  .icon-btn svg{opacity:0.7}
+  .icon-btn:hover svg{opacity:1;color:var(--accent)}
 
-    .empty {
-      padding: 32px 14px;
-      text-align: center;
-      color: #999;
-      font-size: 12px;
-      line-height: 1.6;
-    }
+  .email-list{
+    flex:1;overflow-y:auto;
+  }
+  .email-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    padding:12px 14px 14px;
+    align-items:start;
+  }
+  .email-card{
+    position:relative;
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    background:var(--card);
+    overflow:hidden;cursor:pointer;
+    display:flex;flex-direction:column;
+    animation:fadeUp 0.3s ease both;
+    transition:border-color 0.18s, box-shadow 0.18s;
+  }
+  .email-card:hover{
+    border-color:var(--accent-line);
+    box-shadow:0 4px 18px rgba(180,124,253,0.18), 0 1px 4px rgba(0,0,0,0.3);
+  }
+  .email-card.imported{
+    border-color:var(--green-line);
+  }
+  .email-card-stack{
+    width:100%;
+    background:var(--bg2);
+    overflow:hidden;
+    display:flex;flex-direction:column;
+    max-height:360px;
+  }
+  .email-card-stack img{
+    width:100%;display:block;
+    image-rendering:-webkit-optimize-contrast;
+  }
+  .email-card-noimage{
+    padding:44px 14px;
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    font-family:var(--display);font-style:italic;font-weight:300;
+    font-variation-settings:"opsz" 144;
+    font-size:22px;color:var(--accent);
+    background:linear-gradient(135deg, rgba(180,124,253,0.14), rgba(255,127,194,0.08));
+    letter-spacing:-0.02em;
+    line-height:1;
+    text-align:center;
+  }
+  .email-card-noimage .sub{
+    font-family:var(--mono);font-style:normal;
+    font-size:8px;letter-spacing:0.18em;
+    color:var(--text-muted);text-transform:uppercase;
+    font-weight:500;
+  }
+  .email-card-info{
+    padding:8px 10px 10px;
+    border-top:1px solid var(--line-sub);
+    background:var(--card);
+    display:flex;flex-direction:column;gap:3px;
+  }
+  .email-card-subject{
+    font-family:var(--display);font-weight:500;font-size:11px;
+    font-variation-settings:"opsz" 24;
+    color:var(--text);letter-spacing:-0.01em;
+    line-height:1.32;
+    display:-webkit-box;
+    -webkit-line-clamp:2;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+    word-break:break-word;
+  }
+  .email-card-meta{
+    font-family:var(--mono);font-size:8px;
+    color:var(--text-muted);
+    letter-spacing:0.04em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .email-card-meta .dot{opacity:0.5;padding:0 4px}
+  .email-card-badge{
+    position:absolute;top:6px;right:6px;
+    padding:3px 7px;
+    font-family:var(--mono);font-size:8px;font-weight:500;
+    letter-spacing:0.08em;text-transform:uppercase;
+    border-radius:4px;
+    background:rgba(13,11,18,0.78);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    color:var(--text-sec);
+    border:1px solid var(--line);
+    opacity:0;transform:translateY(-2px);
+    transition:opacity 0.18s, transform 0.18s;
+    pointer-events:none;
+  }
+  .email-card:hover .email-card-badge{opacity:1;transform:translateY(0)}
+  .email-card.imported .email-card-badge{
+    opacity:1;transform:translateY(0);
+    color:var(--green);
+    border-color:var(--green-line);
+    background:rgba(13,11,18,0.85);
+  }
+  .email-card.loading .email-card-badge{
+    opacity:1;transform:translateY(0);
+    color:var(--accent);border-color:var(--accent-line);
+  }
 
-    .loading { padding: 24px; text-align: center; color: #999; }
-  </style>
+  .email-footer{
+    padding:12px 20px 14px;
+    border-top:1px solid var(--line-sub);
+    flex-shrink:0;
+  }
+
+  /* ── BUILDER VIEW ─────────────────────────────────────────── */
+  .builder{display:flex;flex:1;overflow:hidden;min-height:0}
+
+  /* Left: library */
+  .lib-panel{
+    width:60%;
+    border-right:1px solid var(--line-sub);
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .lib-header{
+    display:flex;align-items:center;gap:8px;
+    padding:12px 14px 10px;
+    border-bottom:1px solid var(--line-sub);
+    flex-shrink:0;
+  }
+  .lib-header .micro{flex-shrink:0}
+  .lib-header-spacer{flex:1}
+
+  .lib-scroll{
+    flex:1;overflow-y:auto;
+    padding:10px 12px 14px;
+  }
+
+  /* category group — treated as a specimen sheet */
+  .cat-group{
+    margin-bottom:22px;
+    animation:fadeUp 0.3s ease both;
+    position:relative;
+  }
+  /* faded connector rule between specimen sheets */
+  .cat-group:not(:first-child)::before{
+    content:'';display:block;
+    margin:-8px 6px 20px;
+    height:1px;
+    background-image:linear-gradient(90deg, transparent 0%, var(--line-sub) 20%, var(--line-sub) 80%, transparent 100%);
+    opacity:0.7;
+  }
+  .cat-group-header{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:10px;
+    padding:4px 2px 10px;
+    border-bottom:1px solid var(--line-sub);
+    margin-bottom:10px;
+    position:relative;
+  }
+  /* gradient accent tick sitting on the left of the bottom rule */
+  .cat-group-header::after{
+    content:'';position:absolute;left:0;bottom:-1px;
+    width:26px;height:1.5px;
+    background:linear-gradient(90deg, var(--accent), var(--accent-2));
+    box-shadow:0 0 8px rgba(180,124,253,0.35);
+  }
+  .cat-name{
+    font-family:var(--body);
+    font-weight:600;font-size:11px;
+    color:var(--text);
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    line-height:1;
+    min-width:0;flex:1;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .cat-count{
+    font-family:var(--mono);font-size:9px;font-weight:500;
+    color:var(--text-muted);letter-spacing:0.08em;
+    padding:3px 8px;border-radius:10px;
+    background:rgba(138,131,153,0.12);
+    border:1px solid var(--line-sub);
+    line-height:1;flex-shrink:0;
+  }
+
+  /* section grid — left-to-right, 2 columns */
+  .section-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px;
+    align-items:start;
+  }
+
+  .thumb-card{
+    position:relative;
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    background:var(--bg2);
+    overflow:hidden;cursor:pointer;
+    transform-origin:center center;
+    transition:
+      transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1.08),
+      border-color 0.2s ease,
+      box-shadow 0.28s ease;
+    z-index:1;
+  }
+  .thumb-card:hover{
+    transform:scale(1.065);
+    border-color:var(--accent-line);
+    box-shadow:
+      0 10px 28px rgba(180,124,253,0.30),
+      0 4px 10px rgba(0,0,0,0.38),
+      0 0 0 1px rgba(180,124,253,0.35);
+    z-index:10;
+  }
+  .thumb-card.selected{
+    border-color:var(--green-line);
+    box-shadow:0 0 0 1px var(--green-line) inset, 0 4px 14px rgba(92,217,126,0.15);
+  }
+  .thumb-preview{
+    width:100%;overflow:hidden;
+    background:#232130;
+    position:relative;
+    line-height:0;
+  }
+  .thumb-preview img{
+    width:100%;display:block;
+    image-rendering:-webkit-optimize-contrast;
+  }
+  .thumb-label{
+    padding:5px 7px 6px;
+    font-family:var(--mono);font-size:9px;font-weight:500;
+    color:var(--text-sec);letter-spacing:0.02em;
+    text-align:left;
+    border-top:1px solid var(--line-sub);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    background:var(--card);
+  }
+  .thumb-card:hover .thumb-label{color:var(--text)}
+
+  /* Right: compose */
+  .compose-panel{
+    width:40%;
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .compose-header{
+    display:flex;align-items:center;gap:8px;
+    padding:12px 14px 10px;
+    border-bottom:1px solid var(--line-sub);
+    flex-shrink:0;
+  }
+  .compose-header .micro{flex:1}
+  .compose-count{
+    font-family:var(--mono);font-size:9px;font-weight:500;
+    letter-spacing:0.04em;
+    min-width:20px;padding:2px 7px;
+    border-radius:10px;text-align:center;
+    background:var(--accent-dim);
+    color:var(--accent);
+    border:1px solid var(--accent-line);
+  }
+  .compose-count.zero{
+    background:transparent;color:var(--text-muted);
+    border-color:var(--line-sub);
+  }
+
+  .compose-scroll{flex:1;overflow-y:auto}
+
+  .compose-empty{
+    flex:1;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    padding:24px 18px;gap:8px;
+    text-align:center;
+    min-height:200px;
+  }
+  .compose-empty-serif{
+    font-family:var(--body);font-weight:500;
+    font-size:13px;color:var(--text-sec);letter-spacing:-0.005em;
+    line-height:1.35;
+  }
+  .compose-empty-hint{
+    font-family:var(--mono);font-size:9px;
+    color:var(--text-muted);
+    letter-spacing:0.12em;text-transform:uppercase;
+    margin-top:2px;
+  }
+
+  /* compose items (seamless) */
+  .compose-section{position:relative;animation:fadeUp 0.25s ease both}
+  .compose-section-preview{width:100%;overflow:hidden;position:relative;background:#232130}
+  .compose-section-preview img{width:100%;display:block}
+  .compose-section-overlay{
+    position:absolute;top:4px;right:4px;
+    display:flex;gap:3px;opacity:0;
+    transition:opacity 0.15s;
+  }
+  .compose-section:hover .compose-section-overlay{opacity:1}
+  .compose-section-overlay button{
+    width:22px;height:22px;padding:0;
+    border:none;border-radius:4px;
+    background:rgba(13,11,18,0.78);
+    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);
+    color:var(--text);
+    font-family:var(--body);font-size:11px;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    transition:background 0.15s;
+  }
+  .compose-section-overlay button:hover{background:rgba(180,124,253,0.7)}
+  .compose-section-overlay button.remove:hover{background:rgba(232,80,58,0.82)}
+
+  .compose-placeholder-label{
+    padding:10px 12px;
+    font-family:var(--mono);font-size:9px;
+    color:var(--text-muted);letter-spacing:0.06em;
+    text-align:center;
+    background:var(--card);
+    border-top:1px solid var(--line-sub);
+  }
+
+  /* ── BUILDER FOOTER ──────────────────────────────────────── */
+  .builder-footer{
+    padding:12px 20px 14px;
+    border-top:1px solid var(--line);
+    flex-shrink:0;
+    background:var(--bg2);
+  }
+
+  /* ── PRIMARY BUTTON ──────────────────────────────────────── */
+  .btn-primary{
+    display:block;width:100%;
+    padding:11px 18px;border:none;
+    border-radius:var(--radius);
+    font-family:var(--body);font-size:12px;font-weight:700;
+    letter-spacing:0.02em;
+    cursor:pointer;transition:all 0.2s ease;
+    background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    color:#fff;
+    box-shadow:
+      0 1px 2px rgba(0,0,0,0.3),
+      inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  .btn-primary:hover{
+    transform:translateY(-0.5px);
+    box-shadow:
+      0 6px 18px rgba(180,124,253,0.30),
+      0 2px 6px rgba(255,127,194,0.16),
+      inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  .btn-primary:active{transform:translateY(0.5px);box-shadow:0 1px 2px rgba(0,0,0,0.3)}
+  .btn-primary:disabled{
+    background:var(--line);color:var(--text-muted);
+    cursor:not-allowed;transform:none;box-shadow:none;
+    background-image:none;
+  }
+
+  .btn-ghost{
+    display:block;width:100%;
+    padding:10px 16px;
+    background:transparent;color:var(--text-sec);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    font-family:var(--mono);font-size:10px;font-weight:500;
+    letter-spacing:0.12em;text-transform:uppercase;
+    cursor:pointer;transition:all 0.18s ease;
+  }
+  .btn-ghost:hover{border-color:var(--accent-line);color:var(--text);background:var(--card)}
+  .btn-ghost:disabled{opacity:0.45;cursor:not-allowed}
+
+  /* ── CUSTOM DROPDOWN (category filter) ───────────────────── */
+  .csel{position:relative;min-width:128px}
+  .csel-trigger{
+    width:100%;padding:5px 24px 6px 9px;
+    background:var(--card);color:var(--text-sec);
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    font-family:var(--mono);font-size:9px;font-weight:500;
+    letter-spacing:0.1em;text-transform:uppercase;
+    cursor:pointer;text-align:left;
+    transition:border-color 0.18s, color 0.18s, background 0.18s;
+    position:relative;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .csel-trigger:hover{border-color:#403A50;color:var(--text);background:var(--card-up)}
+  .csel.open .csel-trigger{border-color:var(--accent);color:var(--accent);background:var(--card-up)}
+  .csel-trigger::after{
+    content:'';position:absolute;right:8px;top:50%;
+    width:0;height:0;
+    border-left:3px solid transparent;border-right:3px solid transparent;
+    border-top:4px solid currentColor;
+    transform:translateY(-50%);
+    transition:transform 0.2s;
+    opacity:0.7;
+  }
+  .csel.open .csel-trigger::after{transform:translateY(-50%) rotate(180deg)}
+
+  .csel-panel{
+    position:absolute;right:0;top:calc(100% + 4px);
+    min-width:160px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius-sm);
+    padding:3px;z-index:60;
+    max-height:220px;overflow-y:auto;
+    box-shadow:0 8px 24px rgba(0,0,0,0.45), 0 1px 4px rgba(0,0,0,0.3);
+    opacity:0;transform:translateY(-4px) scaleY(0.96);
+    transform-origin:top center;
+    transition:opacity 0.15s, transform 0.15s;
+    pointer-events:none;
+  }
+  .csel.open .csel-panel{opacity:1;transform:translateY(0) scaleY(1);pointer-events:auto}
+  .csel-opt{
+    padding:6px 9px;
+    font-family:var(--mono);font-size:10px;font-weight:500;
+    letter-spacing:0.05em;text-transform:uppercase;
+    color:var(--text-sec);
+    border-radius:4px;cursor:pointer;
+    display:flex;align-items:center;gap:7px;
+    transition:background 0.12s, color 0.12s;
+  }
+  .csel-opt:hover{background:var(--accent-dim);color:var(--text)}
+  .csel-opt.selected{color:var(--accent)}
+  .csel-opt.selected::before{
+    content:'';width:4px;height:4px;border-radius:50%;
+    background:var(--accent);flex-shrink:0;
+  }
+  .csel-opt.selected + .csel-opt-count,
+  .csel-opt .csel-opt-count{margin-left:auto;font-size:9px;color:var(--text-muted);font-weight:400;letter-spacing:0.04em}
+
+  /* ── STATUS BAR (bottom inline) ──────────────────────────── */
+  .status-bar{
+    display:flex;align-items:center;gap:7px;
+    min-height:24px;
+    padding:5px 20px;
+    font-family:var(--mono);font-size:10px;
+    color:var(--text-muted);letter-spacing:0.04em;
+    border-top:1px solid var(--line-sub);
+    flex-shrink:0;
+    background:var(--bg);
+    transition:color 0.2s;
+  }
+  .status-bar::before{
+    content:'\203A';color:var(--text-muted);font-size:12px;line-height:1;
+    transition:color 0.2s;
+  }
+  .status-bar.info{color:var(--accent)}
+  .status-bar.info::before{content:'\203A';color:var(--accent)}
+  .status-bar.success{color:var(--green)}
+  .status-bar.success::before{content:'\2713';color:var(--green)}
+  .status-bar.error{color:var(--red)}
+  .status-bar.error::before{content:'\26A0';color:var(--red)}
+
+  /* ── SCANNING STATE ──────────────────────────────────────── */
+  .scanning{
+    padding:44px 22px;text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:14px;
+  }
+  .scanning-eyebrow{
+    display:inline-flex;align-items:center;gap:6px;
+    font-family:var(--mono);font-size:9px;font-weight:500;
+    letter-spacing:0.22em;text-transform:uppercase;
+    color:var(--accent);
+  }
+  .scanning-eyebrow::before{
+    content:'';width:4px;height:4px;border-radius:50%;
+    background:var(--accent);
+    animation:pulse-dot 1.4s ease-in-out infinite;
+  }
+  .scanning-phrase{
+    font-family:var(--body);font-weight:500;
+    font-size:14px;letter-spacing:-0.005em;
+    color:var(--text);line-height:1.35;
+    max-width:240px;
+  }
+  .scanning-dots{
+    display:inline-block;width:32px;text-align:left;
+    color:var(--accent);
+  }
+  .scanning-dots::after{
+    content:'';animation:dots 1.6s steps(4,end) infinite;
+  }
+  .scanning-sub{
+    font-family:var(--mono);font-size:9px;
+    letter-spacing:0.14em;text-transform:uppercase;
+    color:var(--text-muted);
+  }
+
+  /* skeleton strips as a hint of what's coming */
+  .scanning-skel{
+    margin-top:10px;width:100%;max-width:260px;
+    display:flex;flex-direction:column;gap:6px;
+  }
+  .scanning-skel-row{
+    height:10px;border-radius:3px;
+    background:linear-gradient(90deg, var(--card) 0%, var(--card-up) 50%, var(--card) 100%);
+    background-size:200% 100%;
+    animation:shimmer 1.8s linear infinite;
+  }
+  .scanning-skel-row:nth-child(2){width:82%}
+  .scanning-skel-row:nth-child(3){width:66%}
+
+  /* ── EMPTY STATES ────────────────────────────────────────── */
+  .empty{
+    padding:44px 22px;text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+  }
+  .empty-serif{
+    font-family:var(--body);font-weight:500;
+    font-size:14px;color:var(--text-sec);letter-spacing:-0.005em;
+    line-height:1.35;max-width:240px;
+  }
+  .empty-hint{
+    font-family:var(--mono);font-size:9px;
+    color:var(--text-muted);letter-spacing:0.12em;
+    text-transform:uppercase;
+  }
+
+  /* ── ANIMATIONS ──────────────────────────────────────────── */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes pulse-dot{0%,100%{opacity:0.4;transform:scale(0.85)}50%{opacity:1;transform:scale(1.15)}}
+  @keyframes dots{
+    0%{content:''}
+    25%{content:'.'}
+    50%{content:'..'}
+    75%{content:'...'}
+    100%{content:''}
+  }
+  @keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+</style>
 </head>
 <body>
 
-  <div class="header">
-    <h2>Email Remixer</h2>
-    <button class="btn-refresh" onclick="loadEmails()">↻ Refresh</button>
+  <!-- Header -->
+  <div class="topbar">
+    <div class="wordmark">
+      <span class="wordmark-dot"></span>
+      <span>Email <em>Remixer</em></span>
+    </div>
+    <div class="version">V1 · BUILDER</div>
   </div>
 
-  <div id="content">
-    <div class="loading">Loading emails...</div>
+  <!-- Mode switch -->
+  <div class="mode-switch" id="modeSwitch" role="tablist">
+    <button class="mode-step active" data-view="emails" onclick="showView('emails')">Inbox</button>
+    <button class="mode-step" data-view="builder" onclick="showView('builder')">Compose</button>
   </div>
 
-  <div class="footer">
-    <button class="btn-import-all" id="importAllBtn" onclick="importAll()" disabled>Import All</button>
+  <!-- EMAILS -->
+  <div class="view active" id="view-emails">
+    <div class="emails-top">
+      <span class="micro">Scraped &mdash; tap to import</span>
+      <button class="icon-btn" onclick="loadEmails()" title="Refresh">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        Refresh
+      </button>
+    </div>
+    <div class="email-list" id="email-list">
+      <div class="scanning">
+        <span class="scanning-eyebrow">Loading</span>
+        <div class="scanning-phrase">Fetching your inbox<span class="scanning-dots"></span></div>
+      </div>
+    </div>
+    <div class="email-footer" id="email-footer" style="display:none">
+      <button class="btn-primary" id="importAllBtn" onclick="importAll()">
+        <span>Import all emails</span>
+      </button>
+    </div>
   </div>
 
-  <div class="status" id="status"></div>
+  <!-- BUILDER -->
+  <div class="view" id="view-builder">
+    <div class="builder">
+
+      <!-- Left: library -->
+      <div class="lib-panel">
+        <div class="lib-header">
+          <span class="micro">Library</span>
+          <span class="lib-header-spacer"></span>
+          <div class="csel" id="catFilterSel">
+            <button type="button" class="csel-trigger" id="catFilterTrigger">All</button>
+            <div class="csel-panel" id="catFilterPanel"></div>
+          </div>
+          <button class="icon-btn" onclick="scanWorkspace()" title="Re-scan canvas">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"/><path d="M20.49 15A9 9 0 1 1 5.64 5.64L23 10"/>
+            </svg>
+            Scan
+          </button>
+        </div>
+        <div class="lib-scroll" id="lib-scroll">
+          <div class="empty">
+            <div class="empty-serif">Tap Scan to index your canvas</div>
+            <div class="empty-hint">Builder mode</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: compose -->
+      <div class="compose-panel">
+        <div class="compose-header">
+          <span class="micro">Your Email</span>
+          <span class="compose-count zero" id="composeCount">0</span>
+        </div>
+        <div class="compose-scroll" id="compose-scroll">
+          <div class="compose-empty">
+            <div class="compose-empty-serif">Your email is empty</div>
+            <div class="compose-empty-hint">Tap a section to add it</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="builder-footer">
+      <button class="btn-primary" id="createEmailBtn" onclick="createComposedEmail()" disabled>
+        <span>Create new email</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Status bar -->
+  <div class="status-bar" id="statusBar"><span id="statusText">Ready</span></div>
 
 <script>
+  // ── Config ─────────────────────────────────────────
   const SERVER = 'http://localhost:3055';
+
+  const CATEGORY_ORDER = ['logo', 'header', 'hero', 'cta', 'countdowns', 'body', 'benefits', 'testimonials', 'products', 'comparisons', 'discounts', 'dividers', 'social', 'footer'];
+  const CATEGORY_DISPLAY = {
+    logo: 'Header Logo', header: 'Header', hero: 'Hero', cta: 'CTA',
+    countdowns: 'Countdown',
+    body: 'Body Text', benefits: 'Benefit', testimonials: 'Testimonial',
+    products: 'Product Card', comparisons: 'Comparison', discounts: 'Discount',
+    dividers: 'Divider', social: 'Social', footer: 'Footer'
+  };
+
+  // ── State ──────────────────────────────────────────
   let emails = [];
   let importing = false;
+  let workspaceSections = [];
+  let thumbnailCache = {};
+  let scanning = false;
+  let composeQueue = [];
+  let filterValue = 'all';
+  let hasScannedOnce = false;
+
+  // ── View switching ─────────────────────────────────
+  function showView(name) {
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+    document.querySelectorAll('.mode-step').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+    if (name === 'builder' && !hasScannedOnce) {
+      scanWorkspace();
+    }
+  }
+
+  // ── Helpers ────────────────────────────────────────
+  function setStatus(msg, type) {
+    const bar = document.getElementById('statusBar');
+    const txt = document.getElementById('statusText');
+    txt.textContent = msg || '';
+    bar.className = 'status-bar' + (type ? ' ' + type : '');
+    if (msg && type !== 'error' && type) {
+      setTimeout(() => {
+        if (txt.textContent === msg) {
+          txt.textContent = 'Ready';
+          bar.className = 'status-bar';
+        }
+      }, 3400);
+    }
+  }
+
+  function esc(str) {
+    if (str === null || str === undefined) return '';
+    const d = document.createElement('div');
+    d.textContent = String(str);
+    return d.innerHTML;
+  }
+
+  function catDisplayName(cat) {
+    return CATEGORY_DISPLAY[cat] || (cat.charAt(0).toUpperCase() + cat.slice(1));
+  }
+
+  // ── Scanning template ──────────────────────────────
+  function scanningHtml(eyebrow, phrase, sub) {
+    return '<div class="scanning">'
+      + '<span class="scanning-eyebrow">' + esc(eyebrow) + '</span>'
+      + '<div class="scanning-phrase">' + esc(phrase)
+      + '<span class="scanning-dots"></span></div>'
+      + '<div class="scanning-skel">'
+      +   '<div class="scanning-skel-row"></div>'
+      +   '<div class="scanning-skel-row"></div>'
+      +   '<div class="scanning-skel-row"></div>'
+      + '</div>'
+      + (sub ? '<div class="scanning-sub">' + esc(sub) + '</div>' : '')
+      + '</div>';
+  }
+
+  function emptyHtml(title, hint) {
+    return '<div class="empty">'
+      + '<div class="empty-serif">' + esc(title) + '</div>'
+      + (hint ? '<div class="empty-hint">' + esc(hint) + '</div>' : '')
+      + '</div>';
+  }
+
+  // ═══════════════════════════════════════════════════
+  //  EMAILS VIEW
+  // ═══════════════════════════════════════════════════
 
   async function loadEmails() {
-    document.getElementById('content').innerHTML = '<div class="loading">Loading...</div>';
-    document.getElementById('importAllBtn').disabled = true;
-    setStatus('');
+    const list = document.getElementById('email-list');
+    list.innerHTML = scanningHtml('Loading', 'Fetching your inbox');
+    document.getElementById('email-footer').style.display = 'none';
 
     try {
-      const res = await fetch(`${SERVER}/emails`);
+      const res = await fetch(SERVER + '/emails');
       if (!res.ok) throw new Error('Server error');
       emails = await res.json();
 
       if (emails.length === 0) {
-        document.getElementById('content').innerHTML = '<div class="empty">No emails found.<br>Run the parser first.</div>';
+        list.innerHTML = emptyHtml('No emails found', 'Run the parser first');
         return;
       }
 
-      const html = emails.map((e, i) => `
-        <div class="email-item" id="item-${i}">
-          <div class="email-info">
-            <div class="email-subject">${e.meta.subject}</div>
-            <div class="email-meta">${e.meta.date} · ${e.meta.sender}</div>
-          </div>
-          <button class="btn-import" onclick="importOne(${i})" id="btn-${i}">Import</button>
-        </div>
-      `).join('');
+      let html = '<div class="email-grid">';
+      for (let i = 0; i < emails.length; i++) {
+        const e = emails[i];
+        const previews = Array.isArray(e.previews) ? e.previews : (e.preview ? [e.preview] : []);
+        const initial = ((e.meta.sender || e.meta.subject || '?').trim().charAt(0) || '?').toUpperCase();
 
-      document.getElementById('content').innerHTML = `<div class="email-list">${html}</div>`;
-      document.getElementById('importAllBtn').disabled = false;
+        let stack = '';
+        if (previews.length === 0) {
+          stack = '<div class="email-card-noimage">'
+            + '<span>' + esc(initial) + '</span>'
+            + '<span class="sub">No preview</span>'
+            + '</div>';
+        } else {
+          for (const b64 of previews) {
+            const src = b64.startsWith('data:') ? b64 : 'data:image/png;base64,' + b64;
+            stack += '<img src="' + src + '" alt="" />';
+          }
+        }
 
+        html += '<div class="email-card" id="ecard-' + i + '" onclick="importOne(' + i + ')" '
+          + 'style="animation-delay:' + Math.min(i * 24, 360) + 'ms" '
+          + 'title="' + esc(e.meta.subject) + '">'
+          +   '<div class="email-card-stack">' + stack + '</div>'
+          +   '<div class="email-card-info">'
+          +     '<div class="email-card-subject">' + esc(e.meta.subject) + '</div>'
+          +     '<div class="email-card-meta">'
+          +       esc(e.meta.date)
+          +       '<span class="dot">&bull;</span>'
+          +       esc(e.meta.sender)
+          +     '</div>'
+          +   '</div>'
+          +   '<div class="email-card-badge" id="ebadge-' + i + '">Import</div>'
+          + '</div>';
+      }
+      html += '</div>';
+      list.innerHTML = html;
+      document.getElementById('email-footer').style.display = 'block';
+      setStatus(emails.length + ' emails loaded', 'success');
     } catch (e) {
-      document.getElementById('content').innerHTML = `<div class="empty">Could not connect to local server.<br><small>Make sure server.js is running.</small></div>`;
+      list.innerHTML = emptyHtml("Can't reach server", 'Start server.js on :3055');
+      setStatus('Server unreachable on :3055', 'error');
     }
   }
 
   async function importOne(index) {
     if (importing) return;
     const email = emails[index];
-    const btn = document.getElementById(`btn-${index}`);
-    btn.disabled = true;
-    btn.textContent = '...';
-    setStatus(`Importing: ${email.meta.subject}`);
+    const card = document.getElementById('ecard-' + index);
+    const badge = document.getElementById('ebadge-' + index);
+    if (card && card.classList.contains('imported')) return;
+    if (card) card.classList.add('loading');
+    if (badge) badge.textContent = 'Importing';
+    setStatus('Importing: ' + email.meta.subject, 'info');
 
     try {
-      const res = await fetch(`${SERVER}/email/${encodeURIComponent(email.filename)}`);
+      const res = await fetch(SERVER + '/email/' + encodeURIComponent(email.filename));
       const data = await res.json();
-      parent.postMessage({ pluginMessage: { type: 'import', data } }, '*');
-      btn.textContent = '✓';
-      btn.classList.add('done');
+      parent.postMessage({ pluginMessage: { type: 'import', data: data } }, '*');
+      if (card) {
+        card.classList.remove('loading');
+        card.classList.add('imported');
+      }
+      if (badge) badge.textContent = 'Imported';
     } catch (e) {
-      btn.disabled = false;
-      btn.textContent = 'Import';
+      if (card) card.classList.remove('loading');
+      if (badge) badge.textContent = 'Import';
       setStatus('Failed: ' + e.message, 'error');
     }
   }
@@ -198,29 +983,322 @@
     if (importing) return;
     importing = true;
     document.getElementById('importAllBtn').disabled = true;
-    setStatus(`Importing ${emails.length} emails...`);
-
+    setStatus('Importing ' + emails.length + ' emails...', 'info');
     for (let i = 0; i < emails.length; i++) {
       await importOne(i);
       await new Promise(r => setTimeout(r, 400));
     }
-
     importing = false;
-    setStatus(`All ${emails.length} emails imported!`, 'success');
+    setStatus('All ' + emails.length + ' emails imported', 'success');
+    document.getElementById('importAllBtn').disabled = false;
   }
 
-  function setStatus(msg, type) {
-    const el = document.getElementById('status');
-    el.textContent = msg;
-    el.className = 'status' + (type ? ' ' + type : '');
+  // ═══════════════════════════════════════════════════
+  //  BUILDER — LIBRARY
+  // ═══════════════════════════════════════════════════
+
+  function scanWorkspace() {
+    hasScannedOnce = true;
+    workspaceSections = [];
+    thumbnailCache = {};
+    scanning = true;
+    setStatus('Scanning canvas', 'info');
+    document.getElementById('lib-scroll').innerHTML = scanningHtml(
+      'Scanning',
+      'Gathering sections from canvas',
+      'Reading canvas'
+    );
+    parent.postMessage({ pluginMessage: { type: 'scan-workspace' } }, '*');
   }
 
-  window.onmessage = (e) => {
-    const msg = e.data.pluginMessage;
-    if (msg?.type === 'done') setStatus(`Imported "${msg.subject}"`, 'success');
-    else if (msg?.type === 'error') setStatus('Error: ' + msg.message, 'error');
+  function handleWorkspaceSections(sectionsByCategory) {
+    workspaceSections = [];
+    for (const cat of Object.keys(sectionsByCategory)) {
+      for (const sec of sectionsByCategory[cat]) {
+        workspaceSections.push({
+          id: sec.id,
+          sectionName: sec.name,
+          category: sec.category,
+          source: 'workspace',
+          nodeId: sec.id,
+          width: sec.width,
+          height: sec.height,
+          contentHeight: sec.contentHeight || sec.height
+        });
+      }
+    }
+    // Defer render until all thumbnails arrive
+  }
+
+  // Return a style string that crops trailing empty space in the thumbnail
+  // when the frame's rendered content is notably shorter than the frame itself.
+  function thumbPreviewStyle(sec) {
+    if (!sec || !sec.width || !sec.height) return '';
+    const ch = sec.contentHeight || sec.height;
+    if (ch >= sec.height * 0.96) return '';  // no meaningful empty space
+    return 'aspect-ratio:' + sec.width + ' / ' + Math.max(ch, 1) + ';';
+  }
+
+  function handleSingleThumbnail(id, data) {
+    thumbnailCache[id] = data;
+  }
+
+  function handleWorkspaceComplete() {
+    scanning = false;
+    rebuildFilter();
+    renderLibrary();
+    if (workspaceSections.length === 0) {
+      setStatus('No sections on canvas. Import emails first.', 'error');
+    } else {
+      setStatus(workspaceSections.length + ' sections found', 'success');
+    }
+  }
+
+  function thumbHtml(sec) {
+    const nodeId = sec.nodeId;
+    const data = thumbnailCache[nodeId];
+    const cropStyle = thumbPreviewStyle(sec);
+    const styleAttr = cropStyle ? ' style="' + cropStyle + '"' : '';
+    if (data) {
+      return '<div class="thumb-preview" data-node-id="' + nodeId + '"' + styleAttr + '>'
+        + '<img src="data:image/png;base64,' + data + '" />'
+        + '</div>';
+    }
+    return '<div class="thumb-preview" data-node-id="' + nodeId + '" style="height:80px"></div>';
+  }
+
+  function rebuildFilter() {
+    const counts = {};
+    workspaceSections.forEach(s => { counts[s.category] = (counts[s.category] || 0) + 1; });
+    const cats = Object.keys(counts);
+
+    const orderedCats = CATEGORY_ORDER.filter(c => cats.includes(c));
+    cats.forEach(c => { if (!orderedCats.includes(c)) orderedCats.push(c); });
+
+    const panel = document.getElementById('catFilterPanel');
+    let html = '<div class="csel-opt' + (filterValue === 'all' ? ' selected' : '') + '" data-val="all">'
+      + 'All <span class="csel-opt-count">' + workspaceSections.length + '</span></div>';
+    orderedCats.forEach(cat => {
+      html += '<div class="csel-opt' + (filterValue === cat ? ' selected' : '') + '" data-val="' + esc(cat) + '">'
+        + esc(catDisplayName(cat)) + ' <span class="csel-opt-count">' + counts[cat] + '</span></div>';
+    });
+    panel.innerHTML = html;
+    updateFilterTriggerLabel();
+
+    // wire clicks
+    panel.querySelectorAll('.csel-opt').forEach(el => {
+      el.addEventListener('click', () => {
+        filterValue = el.dataset.val;
+        document.getElementById('catFilterSel').classList.remove('open');
+        rebuildFilter();
+        renderLibrary();
+      });
+    });
+  }
+
+  function updateFilterTriggerLabel() {
+    const trigger = document.getElementById('catFilterTrigger');
+    if (filterValue === 'all') {
+      trigger.textContent = 'All · ' + workspaceSections.length;
+    } else {
+      const count = workspaceSections.filter(s => s.category === filterValue).length;
+      trigger.textContent = catDisplayName(filterValue) + ' · ' + count;
+    }
+  }
+
+  function renderLibrary() {
+    const filtered = filterValue === 'all'
+      ? workspaceSections
+      : workspaceSections.filter(s => s.category === filterValue);
+
+    const scroll = document.getElementById('lib-scroll');
+
+    if (filtered.length === 0) {
+      scroll.innerHTML = emptyHtml('No sections found', 'Import emails, then re-scan');
+      return;
+    }
+
+    const groups = {};
+    for (const sec of filtered) {
+      if (!groups[sec.category]) groups[sec.category] = [];
+      groups[sec.category].push(sec);
+    }
+
+    let html = '';
+    const orderedCats = CATEGORY_ORDER.filter(c => groups[c]);
+    Object.keys(groups).forEach(c => { if (!orderedCats.includes(c)) orderedCats.push(c); });
+
+    for (let ci = 0; ci < orderedCats.length; ci++) {
+      const cat = orderedCats[ci];
+      const items = groups[cat];
+      if (!items || items.length === 0) continue;
+
+      html += '<div class="cat-group" style="animation-delay:' + Math.min(ci * 50, 300) + 'ms">';
+      html +=   '<div class="cat-group-header">';
+      html +=     '<span class="cat-name">' + esc(catDisplayName(cat)) + '</span>';
+      html +=     '<span class="cat-count">' + items.length + '</span>';
+      html +=   '</div>';
+      html +=   '<div class="section-grid">';
+
+      for (const sec of items) {
+        const idx = workspaceSections.indexOf(sec);
+        html += '<div class="thumb-card" onclick="addToCompose(' + idx + ')" title="'
+          + esc(sec.sectionName) + ' · ' + sec.width + '\u00d7' + sec.height + '">'
+          + thumbHtml(sec)
+          + '<div class="thumb-label">' + esc(sec.sectionName) + '</div>'
+          + '</div>';
+      }
+      html +=   '</div>';
+      html += '</div>';
+    }
+
+    scroll.innerHTML = html;
+  }
+
+  // ═══════════════════════════════════════════════════
+  //  BUILDER — COMPOSE
+  // ═══════════════════════════════════════════════════
+
+  function addToCompose(idx) {
+    const sec = workspaceSections[idx];
+    if (!sec) return;
+
+    composeQueue.push({
+      queueId: Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+      ...sec
+    });
+
+    renderCompose();
+    setStatus('Added "' + sec.sectionName + '"', 'success');
+  }
+
+  function removeFromCompose(queueId) {
+    composeQueue = composeQueue.filter(item => item.queueId !== queueId);
+    renderCompose();
+  }
+
+  function moveComposeItem(queueId, dir) {
+    const idx = composeQueue.findIndex(item => item.queueId === queueId);
+    if (idx === -1) return;
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= composeQueue.length) return;
+    const tmp = composeQueue[idx];
+    composeQueue[idx] = composeQueue[newIdx];
+    composeQueue[newIdx] = tmp;
+    renderCompose();
+  }
+
+  function renderCompose() {
+    const container = document.getElementById('compose-scroll');
+    const countEl = document.getElementById('composeCount');
+    const createBtn = document.getElementById('createEmailBtn');
+
+    countEl.textContent = composeQueue.length;
+    countEl.classList.toggle('zero', composeQueue.length === 0);
+    createBtn.disabled = composeQueue.length === 0;
+
+    if (composeQueue.length === 0) {
+      container.innerHTML = '<div class="compose-empty">'
+        + '<div class="compose-empty-serif">Your email is empty</div>'
+        + '<div class="compose-empty-hint">Tap a section to add it</div></div>';
+      return;
+    }
+
+    let html = '';
+    for (let i = 0; i < composeQueue.length; i++) {
+      const item = composeQueue[i];
+      const qid = item.queueId;
+      const thumb = thumbnailCache[item.nodeId];
+      const cropStyle = thumbPreviewStyle(item);
+      const previewStyleAttr = cropStyle ? ' style="' + cropStyle + '"' : '';
+      const previewContent = thumb
+        ? '<img src="data:image/png;base64,' + thumb + '" />'
+        : '<div class="compose-placeholder-label">' + esc(item.sectionName) + '</div>';
+
+      html += '<div class="compose-section">'
+        +   '<div class="compose-section-preview"' + previewStyleAttr + '>'
+        +     previewContent
+        +     '<div class="compose-section-overlay">'
+        +       '<button onclick="event.stopPropagation();moveComposeItem(\'' + qid + '\', -1)" title="Move up"'
+        +         (i === 0 ? ' disabled style="opacity:0.3"' : '') + '>&#9650;</button>'
+        +       '<button onclick="event.stopPropagation();moveComposeItem(\'' + qid + '\', 1)" title="Move down"'
+        +         (i === composeQueue.length - 1 ? ' disabled style="opacity:0.3"' : '') + '>&#9660;</button>'
+        +       '<button class="remove" onclick="event.stopPropagation();removeFromCompose(\'' + qid + '\')" title="Remove">&#10005;</button>'
+        +     '</div>'
+        +   '</div>'
+        + '</div>';
+    }
+    container.innerHTML = html;
+  }
+
+  function createComposedEmail() {
+    if (composeQueue.length === 0) return;
+
+    const emailName = 'Your Email';
+    document.getElementById('createEmailBtn').disabled = true;
+    setStatus('Creating "' + emailName + '"...', 'info');
+
+    const sections = composeQueue.map(item => ({
+      source: 'workspace',
+      nodeId: item.nodeId,
+      sectionName: item.sectionName
+    }));
+
+    parent.postMessage({
+      pluginMessage: { type: 'compose-email', sections: sections, emailName: emailName }
+    }, '*');
+  }
+
+  // ── Filter dropdown toggle ─────────────────────────
+  document.addEventListener('click', (e) => {
+    const sel = document.getElementById('catFilterSel');
+    if (!sel) return;
+    if (sel.contains(e.target)) {
+      const trigger = document.getElementById('catFilterTrigger');
+      if (trigger.contains(e.target)) {
+        sel.classList.toggle('open');
+      }
+    } else {
+      sel.classList.remove('open');
+    }
+  });
+
+  // ═══════════════════════════════════════════════════
+  //  MESSAGE HANDLER
+  // ═══════════════════════════════════════════════════
+
+  window.onmessage = (event) => {
+    const msg = event.data.pluginMessage;
+    if (!msg) return;
+
+    switch (msg.type) {
+      case 'done':
+        setStatus('Imported "' + msg.subject + '"', 'success');
+        break;
+      case 'section-imported':
+        setStatus('"' + msg.name + '" imported to canvas', 'success');
+        break;
+      case 'email-composed':
+        setStatus('"' + msg.name + '" created on canvas', 'success');
+        document.getElementById('createEmailBtn').disabled = false;
+        break;
+      case 'workspace-sections':
+        handleWorkspaceSections(msg.sections);
+        break;
+      case 'workspace-thumbnail':
+        handleSingleThumbnail(msg.id, msg.data);
+        break;
+      case 'workspace-thumbnails-complete':
+        handleWorkspaceComplete();
+        break;
+      case 'error':
+        setStatus('Error: ' + msg.message, 'error');
+        document.getElementById('createEmailBtn').disabled = composeQueue.length === 0;
+        break;
+    }
   };
 
+  // ── Init ───────────────────────────────────────────
   loadEmails();
 </script>
 </body>

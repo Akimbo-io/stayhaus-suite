@@ -1,5 +1,6 @@
 {
   "senders": ["support@hears.com"],
+  "queries": ["category:promotions"],
   "outputDir": "./output",
   "processedLedger": "./processed.json"
 }

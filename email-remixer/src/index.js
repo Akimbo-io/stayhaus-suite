@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { authenticate } from './auth.js';
-import { fetchEmailsFromSender, extractHtmlBody, extractInlineImages, getAttachment } from './gmail.js';
+import { fetchEmailsFromSender, fetchEmailsByQuery, extractHtmlBody, extractInlineImages, getAttachment } from './gmail.js';
 import { parseEmailHtml } from './parser.js';
 import { downloadAndEncodeImage } from './images.js';
 import { loadLedger, saveLedger, isProcessed, markProcessed, pruneOldEntries } from './ledger.js';
@@ -51,7 +51,9 @@ async function run() {
   const outputDir = path.resolve(ROOT, config.outputDir);
   const ledgerPath = path.resolve(ROOT, config.processedLedger);
 
+  const rawDir = path.resolve(ROOT, 'raw-html');
   fs.mkdirSync(outputDir, { recursive: true });
+  fs.mkdirSync(rawDir, { recursive: true });
 
   let auth;
   try {
@@ -94,12 +96,19 @@ async function run() {
           continue;
         }
 
-        const parsed = parseEmailHtml(html);
-
         const headers = msg.payload.headers || [];
         const subject = headers.find(h => h.name.toLowerCase() === 'subject')?.value || 'No Subject';
         const date = headers.find(h => h.name.toLowerCase() === 'date')?.value;
         const dateStr = date ? new Date(date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
+        const hash = msg.id.slice(0, 6);
+        const safeSender = sender.replace(/[@.]/g, '-');
+        const safeSubject = subject.replace(/[^a-zA-Z0-9]/g, '-').slice(0, 50).toLowerCase();
+        const filename = `${dateStr}-${safeSender}-${safeSubject}-${hash}`;
+
+        // Save raw HTML for debugging
+        fs.writeFileSync(path.join(rawDir, `${filename}.html`), html);
+
+        const parsed = parseEmailHtml(html);
 
         const inlineImages = extractInlineImages(msg.payload);
         const cidMap = {};
@@ -117,11 +126,79 @@ async function run() {
           ...parsed,
         };
 
+        const outputPath = path.join(outputDir, `${filename}.json`);
+        fs.writeFileSync(outputPath, JSON.stringify(output, null, 2));
+
+        console.log(`Parsed: ${filename}`);
+        ledger = markProcessed(ledger, msg.id, dateStr);
+        stats.parsed++;
+      } catch (err) {
+        console.error(`Failed to parse message ${msg.id}:`, err.message);
+        stats.failed++;
+      }
+    }
+  }
+
+  for (const query of (config.queries || [])) {
+    console.log(`Fetching emails matching query: ${query}...`);
+    let messages;
+    try {
+      messages = await fetchEmailsByQuery(auth, query);
+    } catch (err) {
+      console.error(`Failed to fetch query "${query}":`, err.message);
+      stats.failed++;
+      continue;
+    }
+
+    stats.found += messages.length;
+
+    for (const msg of messages) {
+      if (isProcessed(ledger, msg.id)) {
+        stats.skipped++;
+        continue;
+      }
+
+      try {
+        const html = extractHtmlBody(msg.payload);
+        if (!html) {
+          console.log(`No HTML body for message ${msg.id}, skipping`);
+          stats.skipped++;
+          continue;
+        }
+
+        const headers = msg.payload.headers || [];
+        const subject = headers.find(h => h.name.toLowerCase() === 'subject')?.value || 'No Subject';
+        const fromHeader = headers.find(h => h.name.toLowerCase() === 'from')?.value || 'unknown';
+        const sender = fromHeader.match(/<(.+)>/)?.[1] || fromHeader;
+        const date = headers.find(h => h.name.toLowerCase() === 'date')?.value;
+        const dateStr = date ? new Date(date).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10);
         const hash = msg.id.slice(0, 6);
-        const safeSender = sender.replace(/[@.]/g, '-');
+        const safeSender = sender.replace(/[@.]/g, '-').slice(0, 30);
         const safeSubject = subject.replace(/[^a-zA-Z0-9]/g, '-').slice(0, 50).toLowerCase();
-        const filename = `${dateStr}-${safeSender}-${safeSubject}-${hash}.json`;
-        const outputPath = path.join(outputDir, filename);
+        const filename = `${dateStr}-${safeSender}-${safeSubject}-${hash}`;
+
+        // Save raw HTML for debugging
+        fs.writeFileSync(path.join(rawDir, `${filename}.html`), html);
+
+        const parsed = parseEmailHtml(html);
+
+        const inlineImages = extractInlineImages(msg.payload);
+        const cidMap = {};
+        for (const img of inlineImages) {
+          if (img.contentId && img.attachmentId) {
+            const attachData = await getAttachment(auth, msg.id, img.attachmentId);
+            cidMap[img.contentId] = attachData;
+          }
+        }
+
+        await processImages(parsed.elements, cidMap);
+
+        const output = {
+          meta: { sender, subject, date: dateStr, messageId: msg.id },
+          ...parsed,
+        };
+
+        const outputPath = path.join(outputDir, `${filename}.json`);
         fs.writeFileSync(outputPath, JSON.stringify(output, null, 2));
 
         console.log(`Parsed: ${filename}`);
